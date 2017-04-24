@@ -1,0 +1,334 @@
+{
+    "idl": {
+        "idlInterface": {
+            "idlInterfaceID": {},
+            "idlMethod": {
+                "idlMethType": {
+                    "idlType": {}
+                },
+                "idlMethName": {},
+                "idlParam": {
+                    "idlParamType": {
+                        "idlType": {}
+                    },
+                    "idlParamName": {},
+                    "idlParamValue": {},
+                    "idlDefaultValue": {}
+                }
+            },
+            "idlMaplike": {
+                "idlMaplikeKeyType": {},
+                "idlMaplikeValueType": {
+                    "idlType": {}
+                }
+            },
+            "idlSuperclass": {
+                "idlType": {}
+            },
+            "idlAttribute": {
+                "idlAttrType": {
+                    "idlType": {}
+                },
+                "idlAttrName": {}
+            },
+            "idlCtor": {
+                "idlCtorName": {},
+                "idlParam": {
+                    "idlParamType": {
+                        "idlType": {}
+                    },
+                    "idlParamName": {}
+                }
+            },
+            "idlSectionComment": {},
+            "idlDictionary": {
+                "idlDictionaryID": {},
+                "idlMember": {
+                    "idlMemberType": {},
+                    "idlMemberName": {},
+                    "idlMemberValue": {}
+                },
+                "idlSuperclass": {}
+            },
+            "idlInterface": {
+                "idlInterfaceID": {},
+                "idlAttribute": {
+                    "idlAttrType": {},
+                    "idlAttrName": {}
+                }
+            },
+            "idlIterable": {},
+            "idlSerializer": {
+                "idlSerializerValues": {}
+            },
+            "idlConst": {
+                "idlConstType": {},
+                "idlConstName": {},
+                "idlConstValue": {}
+            }
+        },
+        "idlDictionary": {
+            "idlDictionaryID": {},
+            "idlMember": {
+                "idlMemberType": {
+                    "idlType": {}
+                },
+                "idlMemberName": {},
+                "idlMemberValue": {}
+            },
+            "idlSuperclass": {
+                "idlType": {}
+            },
+            "idlSectionComment": {}
+        },
+        "idlCallback": {
+            "idlCallbackID": {},
+            "idlCallbackType": {},
+            "idlParam": {
+                "idlParamType": {
+                    "idlType": {}
+                },
+                "idlParamName": {}
+            }
+        },
+        "idlEnum": {
+            "idlEnumID": {},
+            "idlEnumItem": {},
+            "idlSectionComment": {}
+        },
+        "idl-code-code": {},
+        "idlTypedef": {
+            "idlTypedefType": {},
+            "idlTypedefID": {}
+        },
+        "idlImplements": {
+            "idlType": {}
+        },
+        "idlinterface": {}
+    },
+    "idlInterface": {
+        "idlInterfaceID": {},
+        "idlMethod": {
+            "idlMethType": {
+                "idlType": {}
+            },
+            "idlMethName": {},
+            "idlParam": {
+                "idlParamType": {
+                    "idlType": {}
+                },
+                "idlParamName": {},
+                "idlParamValue": {},
+                "idlDefaultValue": {}
+            }
+        },
+        "idlMaplike": {
+            "idlMaplikeKeyType": {},
+            "idlMaplikeValueType": {
+                "idlType": {}
+            }
+        },
+        "idlSuperclass": {
+            "idlType": {}
+        },
+        "idlAttribute": {
+            "idlAttrType": {
+                "idlType": {}
+            },
+            "idlAttrName": {}
+        },
+        "idlCtor": {
+            "idlCtorName": {},
+            "idlParam": {
+                "idlParamType": {
+                    "idlType": {}
+                },
+                "idlParamName": {}
+            }
+        },
+        "idlSectionComment": {},
+        "idlDictionary": {
+            "idlDictionaryID": {},
+            "idlMember": {
+                "idlMemberType": {},
+                "idlMemberName": {},
+                "idlMemberValue": {}
+            },
+            "idlSuperclass": {}
+        },
+        "idlInterface": {
+            "idlInterfaceID": {},
+            "idlAttribute": {
+                "idlAttrType": {},
+                "idlAttrName": {}
+            }
+        },
+        "idlIterable": {},
+        "idlSerializer": {
+            "idlSerializerValues": {}
+        },
+        "idlConst": {
+            "idlConstType": {},
+            "idlConstName": {},
+            "idlConstValue": {}
+        }
+    },
+    "idlInterfaceID": {},
+    "idlMethod": {
+        "idlMethType": {
+            "idlType": {}
+        },
+        "idlMethName": {},
+        "idlParam": {
+            "idlParamType": {
+                "idlType": {}
+            },
+            "idlParamName": {},
+            "idlParamValue": {},
+            "idlDefaultValue": {}
+        }
+    },
+    "idlMethType": {
+        "idlType": {}
+    },
+    "idlType": {
+        "idlType": {}
+    },
+    "idlMethName": {},
+    "idlParam": {
+        "idlParamType": {
+            "idlType": {}
+        },
+        "idlParamName": {},
+        "idlParamValue": {},
+        "idlDefaultValue": {}
+    },
+    "idlParamType": {
+        "idlType": {}
+    },
+    "idlParamName": {},
+    "idlDictionary": {
+        "idlDictionaryID": {},
+        "idlMember": {
+            "idlMemberType": {
+                "idlType": {}
+            },
+            "idlMemberName": {},
+            "idlMemberValue": {}
+        },
+        "idlSuperclass": {
+            "idlType": {}
+        },
+        "idlSectionComment": {}
+    },
+    "idlDictionaryID": {},
+    "idlMember": {
+        "idlMemberType": {
+            "idlType": {}
+        },
+        "idlMemberName": {},
+        "idlMemberValue": {}
+    },
+    "idlMemberType": {
+        "idlType": {}
+    },
+    "idlMemberName": {},
+    "idlMaplike": {
+        "idlMaplikeKeyType": {},
+        "idlMaplikeValueType": {
+            "idlType": {}
+        }
+    },
+    "idlMaplikeKeyType": {},
+    "idlMaplikeValueType": {
+        "idlType": {}
+    },
+    "idlCallback": {
+        "idlCallbackID": {},
+        "idlCallbackType": {},
+        "idlParam": {
+            "idlParamType": {
+                "idlType": {}
+            },
+            "idlParamName": {}
+        }
+    },
+    "idlCallbackID": {},
+    "idlCallbackType": {},
+    "idlSuperclass": {
+        "idlType": {}
+    },
+    "idlAttribute": {
+        "idlAttrType": {
+            "idlType": {}
+        },
+        "idlAttrName": {}
+    },
+    "idlAttrType": {
+        "idlType": {}
+    },
+    "idlAttrName": {},
+    "idlEnum": {
+        "idlEnumID": {},
+        "idlEnumItem": {},
+        "idlSectionComment": {}
+    },
+    "idlEnumID": {},
+    "idlEnumItem": {},
+    "idl-code-code": {
+        "idl": {}
+    },
+    "idl-attributes-attributes": {},
+    "idlinterface": {},
+    "idl-type-parenthetical-type-parenthetical": {
+        "idlinterface": {}
+    },
+    "idlMemberValue": {},
+    "idlCtor": {
+        "idlCtorName": {},
+        "idlParam": {
+            "idlParamType": {
+                "idlType": {}
+            },
+            "idlParamName": {}
+        }
+    },
+    "idlCtorName": {},
+    "idlSectionComment": {},
+    "idlParamValue": {},
+    "idl-methods-methods": {},
+    "idlTypedef": {
+        "idlTypedefType": {},
+        "idlTypedefID": {}
+    },
+    "idlTypedefType": {},
+    "idlTypedefID": {},
+    "idlImplements": {
+        "idlType": {}
+    },
+    "idlImplementsDesc": {},
+    "idlDefaultValue": {},
+    "idlIterable": {},
+    "idlTitle": {},
+    "idl-header-header": {},
+    "idl-defs-defs": {},
+    "idl-attr-attr": {},
+    "idl-meth-meth": {},
+    "idl-params-params": {},
+    "idlSerializer": {
+        "idlSerializerValues": {}
+    },
+    "idlSerializerValues": {},
+    "idlConst": {
+        "idlConstType": {},
+        "idlConstName": {},
+        "idlConstValue": {}
+    },
+    "idlConstType": {},
+    "idlConstName": {},
+    "idlConstValue": {},
+    "idltype": {},
+    "idlvalue": {},
+    "idlattr": {},
+    "idl-ignore-ignore": {}
+}
