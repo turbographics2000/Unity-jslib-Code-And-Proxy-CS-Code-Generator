@@ -180,6 +180,7 @@ function addCSLineWithDllImport(id, funcName, funcType, retType, proxyType, para
             addCSLine(`private static extern ${retType} ${id}_${funcName}(string instanceId${paramString});`);
             break;
     }
+    addJSLineWithDllImport(id, funcName, funcType, retType, proxyType, params, isPromise);
 }
 function addCSLineWithMonoPInvokeCallback(id, funcName, isVoid, proxyType) {
     addCSLine(`[MonoPInvokeCallback(typeof(Action<string${isVoid ? '' : ', ' + proxyType}>))]`);
@@ -215,8 +216,6 @@ function saveIdlCode(fileName, enumFileName) {
 }
 
 function generateUnityProxyCode(parseData, zipFileName) {
-    convertToCSData(parseData);
-
     addJSLine(`${jslibName}Plugin = {`);
     addJSLine(`$${jslibName}: {`);
     addJSLine('instances: {}');
