@@ -60,7 +60,7 @@ function memberParse(groupElm, groupItemData, memberKind) {
         memberElms.forEach(elm => {
             memberKind = { Attribute: 'Attr', Method: 'Meth' }[memberKind] || memberKind;
             var memberName = getText(elm.querySelector(`.idl${memberKind}Name`));
-
+            if(memberName === 'getUserMedia') debugger;
             var types = typeParse(elm.querySelector(`.idlType, .idl${memberKind}Type`));
             if (types && types[0].typeName === 'EventHandler') {
                 groupItemData.EventHandler = groupItemData.EventHandler || [];
