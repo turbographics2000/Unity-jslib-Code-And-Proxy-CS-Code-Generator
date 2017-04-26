@@ -12,6 +12,7 @@ var pages = [
 async function getDocs() {
     var docs = [];
     var parser = new DOMParser();
+    var promise = Promise.resolve();
     pages.reduce((promise, page, idx) => {
         return promise
             .then(_ => fetch(page.url))
@@ -23,7 +24,8 @@ async function getDocs() {
                 docs.push(doc);
                 return docs;
             });
-    }, Promise.resolve());
+    }, promise);
+    return promise;
 }
 
 function parseAndGenerateCode(docs) {
