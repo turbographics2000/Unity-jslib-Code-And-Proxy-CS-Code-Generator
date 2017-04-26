@@ -118,7 +118,7 @@ function addJSLineWithDllImport(id, funcName, funcType, retType, proxyType, para
         case 'method':
             var paramString = params ? params.map(param => param.paramName).join(', ') : '';
             paramString = paramString ? ', ' + paramString : '';
-            addJSLine(`function ${id}_${funcName}(instanceId${paramString}) {`);
+            addJSLine(`${id}_${funcName}: function(instanceId${paramString}) {`);
             if(params) params.forEach(param => {
                 if (param.cs_type.proxyType === 'json') {
                     addJSLine(`${param.paramName} = JSON.parse(${param.paramName};`);
@@ -146,7 +146,7 @@ function addJSLineWithDllImport(id, funcName, funcType, retType, proxyType, para
                     addJSLine('return res;');
                 }
             }
-            addJSLine(`}`);
+            addJSLine(`},`);
             break;
     }
 }
@@ -408,7 +408,7 @@ function generateUnityProxyCode(parseData, zipFileName) {
                     if (!data.partial) {
                         var ctorCSLine = function (params) {
                             addCSLine();
-                            addCSLineWithDllImport(id, id + '_instantiate', 'method', 'void', null, null, false)
+                            addCSLineWithDllImport(id, 'instantiate', 'method', 'void', null, null, false)
                             addCSLine(`public ${id} (${params.map(param => param.cs_type.typeName + ' ' + param.paramName).join(', ')})`);
                             addCSLine(`{`);
                             addCSLine(`InstanceId = ${id}_instantiate(${params.map(param => param.paramName).join(', ')});`);
