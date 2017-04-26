@@ -420,7 +420,7 @@ function generateUnityProxyCode(parseData, zipFileName) {
 
                     if (data.Attribute) {
                         Object.keys(data.Attribute).forEach(attributeName => {
-                            attrOrMemberAddCSLine(attributeName, data.Attribute[attributeName]);
+                            attrOrMemberAddCSLine(id, attributeName, data.Attribute[attributeName]);
                         });
                     }
 
