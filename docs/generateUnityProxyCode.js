@@ -447,7 +447,7 @@ function generateUnityProxyCode(parseData, zipFileName) {
                         });
                     }
 
-                    addCSLineWithDllImport(`private static extern bool _${id}Dispose(string instanceId${paramTN});`);
+                    addCSLineWithDllImport(`private static extern bool ${id}_dispose(string instanceId);`);
                     addCSLine('public void Dispose()');
                     addCSLine('{');
                     addCSLine(`if(${id}_dispose(InstanceId) == false)`);
