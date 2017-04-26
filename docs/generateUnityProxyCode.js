@@ -286,7 +286,7 @@ function generateUnityProxyCode(parseData, zipFileName) {
         var isPrimitive = method.cs_type[0].primitive;
         var retType = method.cs_type[0].typeName;
         var proxyType = method.cs_type[0].proxyType;
-        var isPromise = method.promise;
+        var isPromise = method.Promise;
 
         var paramPattern = method.param_pattern ? method.param_pattern : [{ pattern: [] }];
 
