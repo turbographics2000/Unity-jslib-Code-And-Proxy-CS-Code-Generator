@@ -151,7 +151,7 @@ function addJSLineWithDllImport(id, funcName, funcType, retType, proxyType, para
     }
 }
 function saveJSCode(fileName) {
-    zip.file(fileName, csCode);
+    zip.file(fileName, jsCode);
     jsCode = '';
     jsIndentLevel = 0;
 }
