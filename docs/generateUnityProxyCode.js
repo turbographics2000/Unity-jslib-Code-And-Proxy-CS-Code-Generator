@@ -150,6 +150,11 @@ function addJSLineWithDllImport(id, funcName, funcType, retType, proxyType, para
             break;
     }
 }
+function saveCSCode(fileName) {
+    zip.file(fileName, csCode);
+    jsCode = '';
+    jsIndentLevel = 0;
+}
 
 function addCSIndent() {
     csCode += [...Array(csIndentSize * csIndentLevel)].map(x => ' ').join('');
