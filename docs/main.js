@@ -18,7 +18,7 @@ async function getDocs() {
             .then(res => res.text())
             .then(txt => {
                 var doc = parser.parseFromString(txt, 'text/html');
-                var legacySection = dom.getElementById(page.legacyElementId);
+                var legacySection = doc.getElementById(page.legacyElementId);
                 legacySection.parentElement.removeChild(legacySection);
                 docs.push(doc);
                 return docs;
