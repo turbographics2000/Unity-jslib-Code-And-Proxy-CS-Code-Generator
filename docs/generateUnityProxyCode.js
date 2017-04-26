@@ -69,6 +69,7 @@ var useListClasses = [];
 var jslibName = 'UnityWebGLWebRTC';
 
 function camelize(txt, forceUpperCase) {
+    if(!txt) debugger;
     if (txt === 'new') return 'New';
     return txt.split('-').map((elm, idx) => {
         var arr = elm.split('');
