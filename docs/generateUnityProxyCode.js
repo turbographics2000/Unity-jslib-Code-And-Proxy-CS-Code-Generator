@@ -298,7 +298,7 @@ function generateUnityProxyCode(parseData, zipFileName) {
                 }
                 return ret;
             }).join(', ');
-            paramNTO = paramNTO ? ', ' + paramNTO : '';
+            paramTNO = paramTNO ? ', ' + paramTNO : '';
             var paramN = params.map(param => param.paramName).join(', ');
             paramN = paramN ? ', ' + paramN : '';
             var paramTN = params.map(param => param.cs_type.typeName + ' ' + param.paramName).join(', ');
