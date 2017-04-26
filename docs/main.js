@@ -13,7 +13,7 @@ async function getDocs() {
     var docs = [];
     var parser = new DOMParser();
     var promise = Promise.resolve();
-    promise.forEach(page => {
+    pages.forEach(page => {
         promise = promise
             .then(_ => fetch(page.url))
             .then(res => res.text())
