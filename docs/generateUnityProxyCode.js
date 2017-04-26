@@ -102,7 +102,7 @@ function addJSLineWithDllImport(id, funcName, funcType, retType, proxyType, para
             addJSLine(`${id}_get${funcName}: function(instanceId) {`);
             addJSLine(`var value = ${jslibName}.instances[instanceId].${funcName}`);
             if (proxyType === 'json') {
-                addJSLine(`value = JSON.stringify(val);`)
+                addJSLine(`value = JSON.stringify(value);`)
             }
             addJSLine(`return value;`);
             addJSLine(`},`);
