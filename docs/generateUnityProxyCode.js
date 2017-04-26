@@ -311,9 +311,9 @@ function generateUnityProxyCode(parseData, zipFileName) {
 
             addCSLine();
             if (isPromise) {
-                addCSLine(`private Action<${isVoid ? 'string' : proxyType}> __${methodName};`);
+                addCSLine(`private Action<${isVoid ? 'string' : proxyType}> ${id}___${methodName};`);
                 //addCSLineWithDllImport(`private static extern void _${methodName}(string instanceId${paramTN})`);
-                addCSLineWithDllImport(id, methodName, 'method', 'void', proxyType, params, true);
+                addCSLineWithDllImport(id, '_' + methodName, 'method', 'void', proxyType, params, true);
                 // addCSLine(`[MonoPInvokeCallback(typeof(Action<string${isVoid ? '' : ', ' + proxyType}>))]`);
                 // addCSLine(`private static void res${methodName}(string instanceId${isVoid ? ', string error' : ', ' + proxyType + 'result'})`);
                 addCSLineWithMonoPInvokeCallback(id, methodName, isVoid, proxyType);
@@ -331,7 +331,7 @@ function generateUnityProxyCode(parseData, zipFileName) {
                 if (isVoid) {
                     addCSLine(`var promise = new Promise((resolve, reject) =>`);
                     addCSLine('{');
-                    addCSLine(`__${methodName} = (error) =>`);
+                    addCSLine(`${id}___${methodName} = (error) =>`);
                     addCSLine('{');
                     addCSLine('if(error == "")');
                     addCSLine('{');
@@ -343,7 +343,7 @@ function generateUnityProxyCode(parseData, zipFileName) {
                 } else {
                     addCSLine(`var promise = new Promise<${retType}>((resolve, reject) =>`);
                     addCSLine('{');
-                    addCSLine(`__${methodName} = (result) =>`);
+                    addCSLine(`${id}___${methodName} = (result) =>`);
                     addCSLine('{');
                     addCSLine('if(result.error == "")');
                     addCSLine('{');
@@ -355,7 +355,7 @@ function generateUnityProxyCode(parseData, zipFileName) {
                 }
                 addCSLine('}');
                 addCSLine('};');
-                addCSLine(`_${id}_${methodName}(InstanceId${strParamName});`);
+                addCSLine(`${id}__${methodName}(InstanceId${paramN});`);
                 addCSLine('});');
                 addCSLine('return promise;');
                 addCSLine('}');
