@@ -326,7 +326,7 @@ function generateUnityProxyCode(parseData, zipFileName) {
                 }
                 addCSLine('}');
                 addCSLine();
-                addCSCode(`public Promise${isVoid ? '' : '<' + retType + '>'} ${methodName}(${paramTNO})`);
+                addCSLine(`public Promise${isVoid ? '' : '<' + retType + '>'} ${methodName}(${paramTNO})`);
                 addCSLine('{');
                 if (isVoid) {
                     addCSLine(`var promise = new Promise((resolve, reject) =>`);
