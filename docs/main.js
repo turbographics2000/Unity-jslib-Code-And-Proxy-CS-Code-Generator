@@ -32,7 +32,7 @@ function parseAndGenerateCode(docs) {
     generateUnityProxyCode(data, 'UnityWebGLWebRTC');
 }
 
-getDocs
+getDocs()
     .then(parseAndGenerateCode)
     .catch(ex => console.log('fetch error', ex));
 
