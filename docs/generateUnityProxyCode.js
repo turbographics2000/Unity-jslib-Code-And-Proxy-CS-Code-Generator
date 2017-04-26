@@ -514,7 +514,7 @@ function generateUnityProxyCode(parseData, zipFileName) {
     addCSLine('}');
     addCSLine('}');
     addCSLine('}');
-    saveCSCode('Manager.cs');
+    saveCSCode(`${jslibName}.cs`);
 
     addJSLine();
     addJSLine(`instance_dispose: function(instanceId) {`);
