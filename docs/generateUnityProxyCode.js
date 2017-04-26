@@ -449,10 +449,9 @@ function generateUnityProxyCode(parseData, zipFileName) {
                         });
                     }
 
-                    addCSLineWithDllImport(`private static extern bool ${id}_dispose(string instanceId);`);
                     addCSLine('public void Dispose()');
                     addCSLine('{');
-                    addCSLine(`if(${id}_dispose(InstanceId) == false)`);
+                    addCSLine(`if(${jslibName}.instance_dispose(InstanceId) == false)`);
                     addCSLine('{');
                     addCSLine('throw new Exception("Dispose error.")');
                     addCSLine('}');
@@ -505,6 +504,8 @@ function generateUnityProxyCode(parseData, zipFileName) {
     addCSLine('{');
     addCSLine(`public class Manager`);
     addCSLine('{');
+    addCSLineWithDllImport(`private static extern bool instance_dispose(string instanceId);`);
+    addCSLine();
     addCSLine('public static ProxyInit()');
     addCSLine('{');
     pinvokeFuncs.forEach((func, idx)  => {
@@ -516,7 +517,7 @@ function generateUnityProxyCode(parseData, zipFileName) {
     saveCSCode('Manager.cs');
 
     addJSLine();
-    addJSLine(`${id}_dispose: function(instanceId) {`);
+    addJSLine(`instance_dispose: function(instanceId) {`);
     addJSLine(`delete ${jslibName}.instances[instanceId];`);
     addJSLine('}');
     addJSLine('}');
