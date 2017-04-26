@@ -1,2 +1,0 @@
-var dummy;
-var hoge;

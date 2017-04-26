@@ -1,52 +1,54 @@
-function WebIDLParse(doc, optimize) {
+function WebIDLParse(docs, optimize) {
     var parseData = {};
 
-    var groups = Array.from(doc.querySelectorAll('.idl *[class$=ID]'))
-        .map(elm => elm.className.replace(/^idl(.+?)ID$/, (a, b) => b))
-        .filter((val, idx, arr) => arr.indexOf(val) === idx);
-
-    groups.forEach(group => { // Dictionary, Interface, Enum, Callback ...
-        var groupData = parseData[group] = parseData[group] || {};
-        doc.querySelectorAll(`.idl${group}`).forEach(groupElm => {
-            var id = getText(groupElm.querySelector(`.idl${group}ID`));
-            var groupItemData = groupData[id] = groupData[id] || {};
-            extAttrParse(groupElm, groupItemData);
-            var types = typeParse(groupElm.querySelector('.idlMaplike'));
-            if (types) {
-                parseData.Maplike = parseData.Maplike || {};
-                parseData.Maplike[id] = {};
-                setKeyValueType(parseData.Maplike[id], types[0].typeName);
-                if (types[0].readonly) parseData.Maplike[id].readonly = true;
-                return;
-            }
-            switch (group) {
-                case 'Dictionary':
-                case 'Interface':
-                    var superclass = getText(groupElm.querySelector('.idlSuperclass'));
-                    if (superclass) groupItemData.Superclass = superclass;
-                    ['Ctor', 'Attribute', 'Member', 'Method', 'Maplike'].forEach(memberKind => {
-                        memberParse(groupElm, groupItemData, memberKind);
-                    })
-                    break;
-                case 'Callback':
-                    memberParse(groupElm, groupItemData, 'Callback');
-                    var cbParams = paramParse(groupElm);
-                    if (cbParams) groupItemData.param = cbParams;
-                    break;
-                case 'Enum':
-                    groupElm.querySelectorAll('.idlEnumItem').forEach(item => {
-                        groupItemData.item = groupItemData.item || [];
-                        groupItemData.item.push(getText(item).replace(/"/g, ''));
-                    });
-                    break;
-            }
+    docs.forEach(doc => {
+        var groups = Array.from(doc.querySelectorAll('.idl *[class$=ID]'))
+            .map(elm => elm.className.replace(/^idl(.+?)ID$/, (a, b) => b))
+            .filter((val, idx, arr) => arr.indexOf(val) === idx);
+        groups.forEach(group => { // Dictionary, Interface, Enum, Callback ...
+            var groupData = parseData[group] = parseData[group] || {};
+            doc.querySelectorAll(`.idl${group}`).forEach(groupElm => {
+                var id = getText(groupElm.querySelector(`.idl${group}ID`));
+                var groupItemData = groupData[id] = groupData[id] || {};
+                extAttrParse(groupElm, groupItemData);
+                var types = typeParse(groupElm.querySelector('.idlMaplike'));
+                if (types) {
+                    parseData.Maplike = parseData.Maplike || {};
+                    parseData.Maplike[id] = {};
+                    setKeyValueType(parseData.Maplike[id], types[0].typeName);
+                    if (types[0].readonly) parseData.Maplike[id].readonly = true;
+                    return;
+                }
+                switch (group) {
+                    case 'Dictionary':
+                    case 'Interface':
+                        var superclass = getText(groupElm.querySelector('.idlSuperclass'));
+                        if (superclass) groupItemData.Superclass = superclass;
+                        ['Ctor', 'Attribute', 'Member', 'Method', 'Maplike'].forEach(memberKind => {
+                            memberParse(groupElm, groupItemData, memberKind);
+                        })
+                        break;
+                    case 'Callback':
+                        memberParse(groupElm, groupItemData, 'Callback');
+                        var cbParams = paramParse(groupElm);
+                        if (cbParams) groupItemData.param = cbParams;
+                        break;
+                    case 'Enum':
+                        groupElm.querySelectorAll('.idlEnumItem').forEach(item => {
+                            groupItemData.item = groupItemData.item || [];
+                            groupItemData.item.push(getText(item).replace(/"/g, ''));
+                        });
+                        break;
+                }
+            });
         });
-    });
 
-    if (optimize) {
-        dataOptimize(parseData);
-        dataOptimize2(parseData);
-    }
+        if (optimize) {
+            dataOptimize(parseData);
+            dataOptimize2(parseData);
+        }
+    });
+    
     return parseData;
 }
 
@@ -139,6 +141,7 @@ function headerKeywordsParse(target, parseData) {
         if (keyword === 'static') parseData.static = true;
         if (keyword === 'readonly') parseData.readonly = true;
         if (keyword === 'required') parseData.required = true;
+        if (keyword === 'partial') parseData.partial = true;
     });
 }
 

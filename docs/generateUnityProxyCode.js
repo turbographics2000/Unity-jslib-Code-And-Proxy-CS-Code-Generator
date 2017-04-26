@@ -59,11 +59,14 @@ var primitiveDefault = {
 var zip = null;
 var idlCodes = [];
 var idlEnums = [];
+var jsCode = '';
+var jsIndentSize = 2;
+var jsIndentLevel = 0;
 var csCode = '';
 var csIndentSize = 2;
 var csIndentLevel = 0;
-var managerNameSpace = 'UnityWebGLWebRTC';
 var useListClasses = [];
+var jslibName = 'UnityWebGLWebRTC';
 
 function camelize(txt, forceUpperCase) {
     if (txt === 'new') return 'New';
@@ -78,22 +81,103 @@ function camelize(txt, forceUpperCase) {
     }).join('');
 }
 
+function addJSIndent() {
+    jsCode += [...Array(jsIndentSize * jsIndentLevel)].map(x => ' ').join('');
+}
+function addJSCode(code = '', isIndent) {
+    if (isIndent) addJSIndent();
+    jsCode += code;
+}
+function addJSLine(code = '') {
+    if (code.includes('}')) jsIndentLevel--;
+    addJSIndent();
+    jsCode += code + '\r\n';
+    if (code.includes('{')) jsIndentLevel++;
+}
+function addJSLineWithDllImport(id, funcName, funcType, retType, proxyType, params, isPromise) {
+    switch (funcType) {
+        case 'get':
+            addJSLine(`${id}_get${funcName}: function(instanceId) {`);
+            addJSLine(`var value = ${jslibName}.instances[instanceId].${funcName}`);
+            if (proxyType === 'json') {
+                addJSLine(`value = JSON.stringify(val);`)
+            }
+            addJSLine(`return value;`);
+            addJSLine(`},`);
+            break;
+        case 'set':
+            addJSLine(`${id}_set${funcName}: function(instanceId, value) {`);
+            if (proxyType === 'json') {
+                addJSLine('value = JSON.parse(value);');
+            }
+            addJSLine(`${jslibName}.instances[instanceId].${funcName} = val;`)
+            addJSLine('},');
+            break;
+        case 'method':
+            var paramString = params ? params.map(param => param.paramName).join(', ') : '';
+            paramString = paramString ? ', ' + paramString : '';
+            addJSLine(`function ${id}_${funcName}(instanceId${paramString}) {`);
+            params.forEach(param => {
+                if (param.cs_type.proxyType === 'json') {
+                    addJSLine(`${param.paramName} = JSON.parse(${param.paramName};`);
+                }
+            });
+            if (isPromise) {
+                addJSLine(`${jslibName}.instances[instanceId].${funcName}(${paramString}).then(res => {`);
+                addJSLine('var args = [instanceId];');
+                if (retType !== 'void') {
+                    if (proxyType === 'json') {
+                        addJSLine('res = args.push(JSON.stringify(res));');
+                    }
+                    addJSLine('args.push(res);');
+                }
+                addJSLine(`_UnityCall(${id}_res${funcName}, args);`);
+                addJSLine('});');
+            } else {
+                if (retType === 'void') {
+                    addJSLine(`${jslibName}.instances[instanceId].${funcName}(${paramString});`);
+                } else {
+                    addJSLine(`var res = ${jslibName}.instances[instanceId].${funcName}(${paramString});`);
+                    if (proxyType === 'json') {
+                        addJSLine('res = JSON.stringify(res);');
+                    }
+                    addJSLine('return res;');
+                }
+            }
+            addJSLine(`}`);
+            break;
+    }
+}
+
 function addCSIndent() {
     csCode += [...Array(csIndentSize * csIndentLevel)].map(x => ' ').join('');
-}
-function addCSCode(code = '', isIndent) {
-    if (isIndent) addCSIndent();
-    csCode += code;
-}
-function addCSLineWithDllImport(code) {
-    addCSLine('[DllImport("__Internal")]');
-    addCSLine(code);
 }
 function addCSLine(code = '') {
     if (code.startsWith('}')) csIndentLevel--;
     addCSIndent();
     csCode += code + '\r\n';
     if (code === '{') csIndentLevel++;
+}
+function addCSLineWithDllImport(id, funcName, funcType, retType, proxyType, params, isPromise) {
+    addCSLine('[DllImport("__Internal")]');
+    var paramString = params ? params.map(param => param.cs_type.typeName + ' ' + param.paramName).join(', ') : '';
+    paramString = paramString ? ', ' + paramString : '';
+    switch (funcType) {
+        case 'get':
+            addCSLine(`private static extern ${retType} ${id}_get${funcName}(string instanceId${paramString});`);
+            break;
+        case 'set':
+            addCSLine(`private static extern void ${id}_set${funcName}(string instanceId, ${retType} value);`);
+            break;
+        case 'method':
+            addCSLine(`private static extern ${retType} ${id}_${funcName}(string instanceId${paramString});`);
+            break;
+    }
+}
+function addCSLineWithMonoPInvokeCallback(id, funcName, isVoid, proxyType) {
+    addCSLine(`[MonoPInvokeCallback(typeof(Action<string${isVoid ? '' : ', ' + proxyType}>))]`);
+    addCSLine(`public static void ${id}_res${funcName}(string instanceId${isVoid ? ', string error' : ', ' + proxyType + ' result'})`);
+    pinvokeFuncs.push({id, funcName, isVoid, proxyType});
 }
 function saveCSCode(fileName) {
     zip.file(fileName, csCode);
@@ -122,30 +206,16 @@ function saveIdlCode(fileName, enumFileName) {
     });
     zip.file(enumFileName, idlEnumCode);
 }
-var csManagerCode = '';
-var csManagerIndentLevel = 0;
-function addCSManagerIndent() {
-    csManager += [...Array(csIndentSize * csIndentLevel)].map(x => ' ').join();
-}
-function addCSManagerCode(code = '') {
-    csManagerCode += code;
-}
-function addCSManagerLine(code = '') {
-    if (code.startsWith('}')) csManagerIndentLevel--;
-    addCSIndent();
-    csManagerCode += [...Array(csIndentSize * csIndentLevel)].map(x => ' ') + code + '\r\n';
-    if (code === '{') csManagerIndentLevel++;
-}
-function saveCSManagerCode(fileName) {
-    zip.file(fileName, csManagerCode);
-    csManagerCode = '';
-    csManagerIndentLevel = 0;
-}
 
-function generateCS(parseData, zipFileName) {
+function generateUnityProxyCode(parseData, zipFileName) {
     convertToCSData(parseData);
 
-    var attrOrMemberAddCSLine = (name, data) => {
+    addJSLine(`${jslibName}Plugin = {`);
+    addJSLine(`$${jslibName}: {`);
+    addJSLine('instances: {}');
+    addJSLine('},');
+
+    var attrOrMemberAddCSLine = (id, name, data) => {
         var camName = camelize(name, true);
         var type = data.cs_type[0];
         if (type.array && !type.primitive) {
@@ -154,9 +224,11 @@ function generateCS(parseData, zipFileName) {
         var retType = type.proxyType === 'json' ? 'string' : type.typeName;
 
         addCSLine();
-        addCSLineWithDllImport(`private static extern ${retType} get${camName}(string instanceId);`);
+        //addCSLineWithDllImport(`private static extern ${retType} get${camName}(string instanceId);`);
+        addCSLineWithDllImport(id, camName, 'get', retType, type.proxyType);
         if (!data.readonly) {
-            addCSLineWithDllImport(`private static extern void set${camName}(string instanceId, ${retType} value);`);
+            //addCSLineWithDllImport(`private static extern void set${camName}(string instanceId, ${retType} value);`);
+            addCSLineWithDllImport(id, camName, 'set', retType, type.proxyType);
         }
         if (type.array) {
             addCSLine(`public ${type.typeName}[] ${name}`);
@@ -203,7 +275,7 @@ function generateCS(parseData, zipFileName) {
         }
     };
 
-    var methodAddCSLine = (methodName, method) => {
+    var methodAddCSLine = (id, methodName, method) => {
         var isVoid = method.cs_type[0].typeName === 'void';
         var isPrimitive = method.cs_type[0].primitive;
         var retType = method.cs_type[0].typeName;
@@ -214,28 +286,31 @@ function generateCS(parseData, zipFileName) {
 
         for (var i = 0, il = paramPattern.length; i < il; i++) {
             var params = paramPattern[i].pattern;
-            var paramString = params.map(pt => {
-                var ret = `, ${pt.cs_type.typeName} ${pt.paramName}`;
-                if (pt.cs_type.optional) {
-                    if (pt.primitive) {
-                        ret += ` = ${primitiveDefault[pt.paramName]}`;
+            var paramTNO = params.map(param => {
+                var ret = `${param.cs_type.typeName} ${param.paramName}`;
+                if (param.cs_type.optional) {
+                    if (param.primitive) {
+                        ret += ` = ${primitiveDefault[param.paramName]}`;
                     } else {
                         ret += ` = null`;
                     }
                 }
                 return ret;
-            });
-            var paramString2 = params.map(pt => pt.paramName).join(', ');
-            paramString2 = paramString2 ? ', ' + paramString2 : '';
-            var paramString3 = params.map(pt => pt.cs_type.typeName + ' ' + pt.paramName).join(', ');
-            paramString3 = paramString3 ? ', ' + paramString3 : '';
+            }).join(', ');
+            paramNTO = strParamNTO ? ', ' + strParamNTO : '';
+            var paramN = params.map(param => param.paramName).join(', ');
+            paramN = paramN ? ', ' + paramN : '';
+            var paramTN = params.map(param => param.cs_type.typeName + ' ' + param.paramName).join(', ');
+            paramTN = paramTN ? ', ' + paramTN : '';
 
             addCSLine();
             if (isPromise) {
                 addCSLine(`private Action<${isVoid ? 'string' : proxyType}> __${methodName};`);
-                addCSLineWithDllImport(`private static extern void _${methodName}(string instanceId, ${paramString})`);
-                addCSLine(`[MonoPInvokeCallback(typeof(Action<string${isVoid ? '' : ', ' + proxyType}>))]`);
-                addCSLine(`private static void res_${methodName}(string instanceId` + (isVoid ? ', string error' : `, ${proxyType} result`) + ')');
+                //addCSLineWithDllImport(`private static extern void _${methodName}(string instanceId${paramTN})`);
+                addCSLineWithDllImport(id, methodName, 'method', 'void', proxyType, params, true);
+                // addCSLine(`[MonoPInvokeCallback(typeof(Action<string${isVoid ? '' : ', ' + proxyType}>))]`);
+                // addCSLine(`private static void res${methodName}(string instanceId${isVoid ? ', string error' : ', ' + proxyType + 'result'})`);
+                addCSLineWithMonoPInvokeCallback(id, methodName, isVoid, proxyType);
                 addCSLine('{');
                 if (isPrimitive) {
                     addCSLine(`Instances[instanceId].__${methodName}.Invoke(${isVoid ? 'error' : 'result'});`);
@@ -245,7 +320,7 @@ function generateCS(parseData, zipFileName) {
                 }
                 addCSLine('}');
                 addCSLine();
-                addCSCode(`public Promise${isVoid ? '' : '<' + retType + '>'} ${methodName}(${paramString})`);
+                addCSCode(`public Promise${isVoid ? '' : '<' + retType + '>'} ${methodName}(${paramTNO})`);
                 addCSLine('{');
                 if (isVoid) {
                     addCSLine(`var promise = new Promise((resolve, reject) =>`);
@@ -274,21 +349,22 @@ function generateCS(parseData, zipFileName) {
                 }
                 addCSLine('}');
                 addCSLine('};');
-                addCSLine(`_${methodName}(InstanceId${paramString2});`);
+                addCSLine(`_${id}_${methodName}(InstanceId${strParamName});`);
                 addCSLine('});');
                 addCSLine('return promise;');
                 addCSLine('}');
             } else {
-                addCSLineWithDllImport(`private static extern ${proxyType} _${methodName}(string instanceId${paramString3});`);
-                addCSLine(`public ${retType} ${methodName}(string instanceId${paramString3})`);
+                //addCSLineWithDllImport(`private static extern ${retType} _${methodName}(string instanceId${strParamTN});`);
+                addCSLineWithDllImport(id, methodName, 'method', retType, proxyType, params);
+                addCSLine(`public ${retType} ${methodName}(${paramTNO})`);
                 addCSLine('{');
                 if (isVoid) {
-                    addCSLine(`_${methodName}(instanceId${paramString2});`);
+                    addCSLine(`_${methodName}(instanceId${paramN});`);
                 } else {
                     if (isPrimitive) {
-                        addCSLine(`${isVoid ? '' : 'return '}_${methodName}(instanceId${paramString2});`);
+                        addCSLine(`${isVoid ? '' : 'return '}_${methodName}(InstanceId${paramN});`);
                     } else {
-                        addCSLine(`var json = _${methodName}(instanceId${paramString2});`);
+                        addCSLine(`var json = _${methodName}(InstanceId${paramN});`);
                         addCSLine(`var ret = JsonUtility.fromJson<${retType}>(json);`);
                         addCSLine('return ret;');
                     }
@@ -301,6 +377,7 @@ function generateCS(parseData, zipFileName) {
     zip = new JSZip();
     saveIdlCode('WebIDL.txt', 'WebIDLEnum.txt');
     Object.keys(parseData).forEach(group => {
+        var pinvokeFuncs = [];
         var groupData = parseData[group];
         switch (group) {
             case 'Dictionary':
@@ -314,7 +391,7 @@ function generateCS(parseData, zipFileName) {
                     addCSLine('using System.Runtime.InteropServices;');
                     addCSLine('using UnityEngine;');
                     addCSLine();
-                    addCSLine(`namespace ${managerNameSpace}`);
+                    addCSLine(`namespace ${jslibName}Proxy`);
                     addCSLine('{');
                     addCSLine(`public class ${id}${data.Superclass ? ' : ' + data.SuperClass : ''}`);
                     addCSLine('{');
@@ -322,14 +399,16 @@ function generateCS(parseData, zipFileName) {
                     addCSLine('public string InstanceId;');
                     addCSLine('public string error;');
 
-                    if (data.Ctor) {
+                    if (!data.partial) {
                         var ctorCSLine = function (params) {
                             addCSLine();
+                            addCSLineWithDllImport(id, id + '_instantiate', 'method', 'void', null, null, false)
                             addCSLine(`public ${id} (${params.map(param => param.cs_type.typeName + ' ' + param.paramName).join(', ')})`);
                             addCSLine(`{`);
+                            addCSLine(`InstanceId = ${id}_instantiate(${params.map(param => param.paramName).join(', ')});`);
                             addCSLine(`} `);
                         }
-                        if (data.Ctor.param_pattern) {
+                        if (data.ctor && data.Ctor.param_pattern) {
                             for (var i = 0, il = data.Ctor.param_pattern.length; i < il; i++) {
                                 ctorCSLine(data.Ctor.param_pattern[i].pattern);
                             }
@@ -346,13 +425,13 @@ function generateCS(parseData, zipFileName) {
 
                     if (data.Member) {
                         Object.keys(data.Member).forEach(memberName => {
-                            attrOrMemberAddCSLine(memberName, data.Member[memberName]);
+                            attrOrMemberAddCSLine(id, memberName, data.Member[memberName]);
                         });
                     }
 
                     if (data.Method) {
                         Object.keys(data.Method).forEach(methodName => {
-                            methodAddCSLine(methodName, data.Method[methodName]);
+                            methodAddCSLine(id, methodName, data.Method[methodName]);
                         });
                     }
 
@@ -368,21 +447,28 @@ function generateCS(parseData, zipFileName) {
                         });
                     }
 
+                    addCSLineWithDllImport(`private static extern bool _${id}Dispose(string instanceId${paramString3});`);
+                    addCSLine('public void Dispose()');
+                    addCSLine('{');
+                    addCSLine(`if(${id}_dispose(InstanceId) == false)`);
+                    addCSLine('{');
+                    addCSLine('throw new Exception("Dispose error.")');
                     addCSLine('}');
                     addCSLine('}');
-
+                    
                     saveCSCode(id + '.cs');
+
                     if (useListClasses.includes(id)) {
                         addCSLine('using System.Collections.Generic;');
                         addCSLine();
-                        addCSLine(`namespace ${managerNameSpace}`);
+                        addCSLine(`namespace ${jslibName}Proxy`);
                         addCSLine('{');
                         addCSLine(`public class ${id}Array`);
                         addCSLine('{');
                         addCSLine(`public ${id}[] array; `);
                         addCSLine('}');
                         addCSLine('}');
-                        saveCSCode(id + 'Array.cs');
+                        saveCSCode(`${id}Array.cs`);
                     }
                 });
                 break;
@@ -392,7 +478,7 @@ function generateCS(parseData, zipFileName) {
                 addCSLine('using System.Linq;');
                 addCSLine('using System.Text;');
                 addCSLine();
-                addCSLine(`namespace ${managerNameSpace} `);
+                addCSLine(`namespace ${jslibName}Proxy`);
                 addCSLine('{');
                 Object.keys(groupData).forEach(id => {
                     var enm = groupData[id];
@@ -404,12 +490,37 @@ function generateCS(parseData, zipFileName) {
                     addCSLine(`}`);
                 });
                 addCSLine(`}`);
-                saveCSCode(`${managerNameSpace}_Enums.cs`);
+                saveCSCode(`${jslibName}Proxy_Enums.cs`);
                 break;
             case 'Callback':
                 break;
         }
     });
+
+    addCSLine('using System;');
+    addCSLine('using UnityEngine;');
+    addCSLine(`namespace ${jslibName}Proxy`);
+    addCSLine('{');
+    addCSLine(`public class Manager`);
+    addCSLine('{');
+    addCSLine('public static ProxyInit()');
+    addCSLine('{');
+    pinvokeFuncs.forEach((func, idx)  => {
+        addCSLine(`${id}.${funcName}${idx === pinvokeFuncs.length - 1 ? '' : ','}`);
+    });
+    addCSLine('}');
+    addCSLine('}');
+    addCSLine('}');
+    saveCSCode('Manager.cs');
+
+    addJSLine();
+    addJSLine(`${id}_dispose: function(instanceId) {`);
+    addJSLine(`delete ${jslibName}.instances[instanceId];`);
+    addJSLine('}');
+    addJSLine('}');
+    addJSLine(`autoAddDeps(${jslibName}Plugin, '$${jslibName}');`);
+    addJSLine(`mergeInto(LibraryManager.library, ${jslibName}Plugin);`);
+    saveJSCode(`${jslibName}.jslib`);
 
     zip.generateAsync({ type: 'blob' })
         .then((content) => {
