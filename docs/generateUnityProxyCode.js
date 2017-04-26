@@ -67,6 +67,7 @@ var csIndentSize = 2;
 var csIndentLevel = 0;
 var useListClasses = [];
 var jslibName = 'UnityWebGLWebRTC';
+var pinvokeFuncs = [];
 
 function camelize(txt, forceUpperCase) {
     if(!txt.split) debugger;
