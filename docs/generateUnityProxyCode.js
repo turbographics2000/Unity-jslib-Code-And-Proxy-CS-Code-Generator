@@ -217,8 +217,8 @@ function saveIdlCode(fileName, enumFileName) {
 
 function generateUnityProxyCode(parseData, zipFileName) {
     addJSLine(`${jslibName}Plugin = {`);
-    addJSIndent();
     addJSLine(`$${jslibName}: {`);
+    addJSIndent();
     addJSLine('instances: {}');
     addJSLine('},');
 
