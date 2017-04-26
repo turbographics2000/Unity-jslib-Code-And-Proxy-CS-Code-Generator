@@ -14,7 +14,7 @@ async function getDocs() {
     var parser = new DOMParser();
     var promise = Promise.resolve();
     pages.reduce((promise, page, idx) => {
-        return promise
+        promise = promise
             .then(_ => fetch(page.url))
             .then(res => res.text())
             .then(txt => {
