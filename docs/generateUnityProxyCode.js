@@ -119,7 +119,7 @@ function addJSLineWithDllImport(id, funcName, funcType, retType, proxyType, para
             var paramString = params ? params.map(param => param.paramName).join(', ') : '';
             paramString = paramString ? ', ' + paramString : '';
             addJSLine(`function ${id}_${funcName}(instanceId${paramString}) {`);
-            params.forEach(param => {
+            if(params) params.forEach(param => {
                 if (param.cs_type.proxyType === 'json') {
                     addJSLine(`${param.paramName} = JSON.parse(${param.paramName};`);
                 }
