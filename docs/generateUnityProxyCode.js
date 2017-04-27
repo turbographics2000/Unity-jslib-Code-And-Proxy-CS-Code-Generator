@@ -121,8 +121,9 @@ function addJSLineWithDllImport(id, funcName, funcType, retType, proxyType, para
         case 'method':
             var paramString = '';
             var delim = paramsMultiline ? '\r\n' + getJSIndent(jsIndentSize, jsIndentLevel + 1) : '';
+            var delim2 = paramsMultiline ? '\r\n' + getJSIndent(jsIndentSize, jsIndentLevel) : '';
             paramString = params ? `${params.map(param => delim + param.paramName).join(',')}` : '';
-            addJSLine(`${id ? id + '_' : ''}${funcName}: function(${delim}instanceId${paramString ? ', ' + paramString : ''}\r\n${addJSIndent()}) {`);
+            addJSLine(`${id ? id + '_' : ''}${funcName}: function(${delim}instanceId${paramString ? ', ' + paramString : ''}}${delim2}) {`);
             if (params) params.forEach(param => {
                 if (param.cs_type.proxyType === 'json') {
                     addJSLine(`${param.paramName} = JSON.parse(${param.paramName});`);
