@@ -119,7 +119,6 @@ function addJSLineWithDllImport(id, funcName, funcType, retType, proxyType, para
             addJSLine('},');
             break;
         case 'method':
-            var paramString = params ? params.map(param => param.paramName).join(', ') : '';
             var paramString = '';
             if (paramsMultiline) {
                 paramString = `\r\n${params.map(param => getJSIndent(jsIndentSize, jsIndentLevel + 1) + param.paramName).join(',\r\n')}`;
