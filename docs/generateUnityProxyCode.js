@@ -501,13 +501,16 @@ function generateUnityProxyCode(parseData, zipFileName) {
 
     addCSLine('using System;');
     addCSLine('using UnityEngine;');
+    addCSLine();
     addCSLine(`namespace ${jslibName}Proxy`);
     addCSLine('{');
     addCSLine(`public class Manager`);
     addCSLine('{');
-    addCSLineWithDllImport(`private static extern bool instance_dispose(string instanceId);`);
+    addCSLine('[DllImport("__Internal")]');
+    addCSLine(`private static extern bool instance_dispose(string instanceId);`);
     addCSLine();
-    addCSLineWithDllImport('public static extern proxyInit(');
+    addCSLine('[DllImport("__Internal")]');
+    addCSLine('public static extern proxyInit(');
     callbackFuncs.forEach((func, idx)  => {
         addCSLine(`Action<string${func.isVoid ? '' : ', ' + func.proxyType}> ${func.id}.${func.funcName}${idx === callbackFuncs.length - 1 ? '' : ','}`);
     });
