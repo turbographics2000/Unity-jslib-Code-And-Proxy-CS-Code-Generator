@@ -527,7 +527,7 @@ function generateUnityProxyCode(parseData, zipFileName) {
     var params = [];
     callbackFuncs.forEach((func, idx)  => {
         params.push({ 
-            csType:{
+            cs_type:{
                 typeName: `Action<string${func.isVoid ? '' : ', ' + func.proxyType}>`
             }, 
             paramName: `${func.id}.${func.funcName}${idx === callbackFuncs.length - 1 ? '' : ','}`
