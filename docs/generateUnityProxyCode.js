@@ -205,7 +205,7 @@ function addCSLineWithMonoPInvokeCallback(id, funcName, isVoid, proxyType) {
         cs_type: {
             typeName: `Action<string${isVoid ? '' : ', ' + (proxyType === 'json' ? 'string' : proxyType)}>`
         },
-        paramName: `${id}.${funcName}${idx === callbackFuncs.length - 1 ? '' : ','}`
+        paramName: funcName
     });
 }
 function saveCSCode(fileName) {
