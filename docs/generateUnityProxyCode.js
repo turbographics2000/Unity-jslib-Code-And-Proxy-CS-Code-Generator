@@ -70,7 +70,7 @@ var jslibName = 'UnityWebGLWebRTC';
 var callbackFuncs = [];
 
 function camelize(txt, forceUpperCase) {
-    if(!txt.split) debugger;
+    if (!txt.split) debugger;
     if (txt === 'new') return 'New';
     return txt.split('-').map((elm, idx) => {
         var arr = elm.split('');
@@ -121,13 +121,13 @@ function addJSLineWithDllImport(id, funcName, funcType, retType, proxyType, para
         case 'method':
             var paramString = params ? params.map(param => param.paramName).join(', ') : '';
             var paramString = '';
-            if(paramsMultiline) {
+            if (paramsMultiline) {
                 paramString = `\r\n${getJSIndent(jsIndentSize, jsIndentLevel + 1)}${params.map(param => param.paramName).join(',\r\n')}`;
             } else {
                 paramString = params ? params.map(param => param.paramName).join(', ') : '';
             }
-            addJSLine(`${id}_${funcName}: function(instanceId${paramString ? ', ' + paramString : ''}) {`);
-            if(params) params.forEach(param => {
+            addJSLine(`${id ? id + '_' : ''}${funcName}: function(instanceId${paramString ? ', ' + paramString : ''}) {`);
+            if (params) params.forEach(param => {
                 if (param.cs_type.proxyType === 'json') {
                     addJSLine(`${param.paramName} = JSON.parse(${param.paramName});`);
                 }
@@ -145,9 +145,9 @@ function addJSLineWithDllImport(id, funcName, funcType, retType, proxyType, para
                 addJSLine('});');
             } else {
                 if (retType === 'void') {
-                    addJSLine(`${jslibName}.instances[instanceId].${funcName}(${paramString});`);
+                    addJSLine(`${id ? jslibName + '.': ''}instances[instanceId].${funcName}(${paramString});`);
                 } else {
-                    addJSLine(`var res = ${jslibName}.instances[instanceId].${funcName}(${paramString});`);
+                    addJSLine(`var res = ${id ? jslibName + '.': ''}instances[instanceId].${funcName}(${paramString});`);
                     if (proxyType === 'json') {
                         addJSLine('res = JSON.stringify(res);');
                     }
@@ -164,7 +164,7 @@ function saveJSCode(fileName) {
     jsIndentLevel = 0;
 }
 
-function getCSIndent(size, level){
+function getCSIndent(size, level) {
     return [...Array(size * level)].map(x => ' ').join('');
 }
 function addCSIndent() {
@@ -179,7 +179,7 @@ function addCSLine(code = '') {
 function addCSLineWithDllImport(id, funcName, funcType, retType, proxyType, params, isPromise, public, paramsMultiline) {
     addCSLine('[DllImport("__Internal")]');
     var paramString = '';
-    if(paramsMultiline) {
+    if (paramsMultiline) {
         paramString = `\r\n${getCSIndent(csIndentSize, csIndentLevel + 1)}${params.map(param => param.cs_type.typeName + ' ' + param.paramName).join(',\r\n')}`;
     } else {
         paramString = params ? params.map(param => param.cs_type.typeName + ' ' + param.paramName).join(', ') : '';
@@ -201,7 +201,12 @@ function addCSLineWithDllImport(id, funcName, funcType, retType, proxyType, para
 function addCSLineWithMonoPInvokeCallback(id, funcName, isVoid, proxyType) {
     addCSLine(`[MonoPInvokeCallback(typeof(Action<string${isVoid ? '' : ', ' + proxyType}>))]`);
     addCSLine(`public static void ${id ? id + '_' : ''}res${funcName}(string instanceId${isVoid ? ', string error' : ', ' + proxyType + ' result'})`);
-    callbackFuncs.push({id, funcName, isVoid, proxyType});
+    callbackFuncs.push({
+        cs_type: {
+            typeName: `Action<string${isVoid ? '' : ', ' + (proxyType === 'json' ? 'string' : proxyType)}>`
+        },
+        paramName: `${id}.${funcName}${idx === callbackFuncs.length - 1 ? '' : ','}`
+    });
 }
 function saveCSCode(fileName) {
     zip.file(fileName, csCode);
@@ -474,7 +479,7 @@ function generateUnityProxyCode(parseData, zipFileName) {
                     addCSLine('throw new Exception("Dispose error.")');
                     addCSLine('}');
                     addCSLine('}');
-                    
+
                     saveCSCode(id + '.cs');
 
                     if (useListClasses.includes(id)) {
@@ -522,21 +527,12 @@ function generateUnityProxyCode(parseData, zipFileName) {
     addCSLine('{');
     addCSLine(`public class Manager`);
     addCSLine('{');
-    addCSLineWithDllImport('', 'instance_dispose', 'method',  'bool');
+    addCSLineWithDllImport('', 'instance_dispose', 'method', 'bool');
     addCSLine();
-    var params = [];
-    callbackFuncs.forEach((func, idx)  => {
-        params.push({ 
-            cs_type:{
-                typeName: `Action<string${func.isVoid ? '' : ', ' + (func.proxyType === 'json' ? 'string' : func.proxyType)}>`
-            }, 
-            paramName: `${func.id}.${func.funcName}${idx === callbackFuncs.length - 1 ? '' : ','}`
-        });
-    });
-    addCSLineWithDllImport('', 'proxyInit', 'method', 'void', null, params, null, true, true);
+    addCSLineWithDllImport('', 'proxyInit', 'method', 'void', null, callbackFuncs, null, true, true);
     addCSLine('public static ProxyInit()');
     addCSLine('{');
-    callbackFuncs.forEach((func, idx)  => {
+    callbackFuncs.forEach((func, idx) => {
         addCSLine(`${func.id}.${func.funcName}${idx === callbackFuncs.length - 1 ? '' : ','}`);
     });
     addCSLine('}');
@@ -545,14 +541,14 @@ function generateUnityProxyCode(parseData, zipFileName) {
     saveCSCode(`${jslibName}.cs`);
 
     addJSLine('proxyInit: function(');
-    callbackFuncs.forEach((func, idx)  => {
+    callbackFuncs.forEach((func, idx) => {
         addJSLine(`${func.id}_${func.funcName}${idx === callbackFuncs.length - 1 ? '' : ','}`);
     });
     addJSLine(') {');
-    callbackFuncs.forEach((func, idx)  => {
+    callbackFuncs.forEach((func, idx) => {
         addJSLine(`${jslibName}.${func.id}_${func.funcName}${idx === callbackFuncs.length - 1 ? '' : ','}`);
     });
-    addJSLine('},');    
+    addJSLine('},');
     addJSLine();
     addJSLine(`instance_dispose: function(instanceId) {`);
     addJSLine(`delete ${jslibName}.instances[instanceId];`);
@@ -560,7 +556,7 @@ function generateUnityProxyCode(parseData, zipFileName) {
     addJSLine();
     addJSLine(`$${jslibName}: {`);
     addJSLine('instances: {},');
-    callbackFuncs.forEach((func, idx)  => {
+    callbackFuncs.forEach((func, idx) => {
         addJSLine(`${func.id}_${func.funcName}: null${idx === callbackFuncs.length - 1 ? '' : ','}`);
     });
     addJSLine('}');
