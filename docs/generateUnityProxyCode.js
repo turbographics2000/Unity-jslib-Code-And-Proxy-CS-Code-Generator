@@ -120,14 +120,10 @@ function addJSLineWithDllImport(id, funcName, funcType, retType, proxyType, para
             break;
         case 'method':
             var paramString = '';
-            var delim = '\r\n' + getJSIndent(jsIndentSize, jsIndentLevel + 1);
-            if (paramsMultiline) {
-                paramString = `${params.map(param => delim + param.paramName).join(',')}`;
-                addJSLine(`${id ? id + '_' : ''}${funcName}: function(\r\n${getJSIndent(jsIndentSize, jsIndentLevel + 1)}instanceId${paramString ? ', ' + paramString : ''}) {`);
-            } else {
-                paramString = params ? params.map(param => param.paramName).join(', ') : '';
-                addJSLine(`${id ? id + '_' : ''}${funcName}: function(instanceId${paramString ? ', ' + paramString : ''}) {`);
-            }
+            var delim = paramMultiline ? '\r\n' + getJSIndent(jsIndentSize, jsIndentLevel + 1) : '';
+            paramString = `${params.map(param => delim + param.paramName).join(',')}`;
+            addJSLine(`${id ? id + '_' : ''}${funcName}: function(${delim}instanceId${paramString ? ', ' + paramString : ''}`);
+            addJSLine(') {');
             if (params) params.forEach(param => {
                 if (param.cs_type.proxyType === 'json') {
                     addJSLine(`${param.paramName} = JSON.parse(${param.paramName});`);
