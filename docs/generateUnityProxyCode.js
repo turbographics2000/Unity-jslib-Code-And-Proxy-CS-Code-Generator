@@ -558,7 +558,7 @@ function generateUnityProxyCode(parseData, zipFileName) {
     addJSLine(`$${jslibName}: {`);
     addJSLine('instances: {},');
     callbackFuncs.forEach((func, idx) => {
-        addJSLine(`${func.id}_${func.funcName}: null${idx === callbackFuncs.length - 1 ? '' : ','}`);
+        addJSLine(`${func.id}_${func.paramName}: null${idx === callbackFuncs.length - 1 ? '' : ','}`);
     });
     addJSLine('}');
     addJSLine('}');
