@@ -168,7 +168,7 @@ function getCSIndent(size, level){
     return [...Array(size * level)].map(x => ' ').join('');
 }
 function addCSIndent() {
-    csCode += getIndent(csIndentSize, csIndentLevel);
+    csCode += getCSIndent(csIndentSize, csIndentLevel);
 }
 function addCSLine(code = '') {
     if (code.startsWith('}')) csIndentLevel--;
