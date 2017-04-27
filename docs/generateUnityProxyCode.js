@@ -91,10 +91,10 @@ function addJSCode(code = '', isIndent) {
     jsCode += code;
 }
 function addJSLine(code = '') {
-    if (code.includes('}')) jsIndentLevel--;
+    if (code.startsWith('}') || code.startsWith(')')) jsIndentLevel--;
     addJSIndent();
     jsCode += code + '\r\n';
-    if (code.includes('{')) jsIndentLevel++;
+    if (code.endsWith('{') || code.endsWith('(')) jsIndentLevel++;
 }
 function addJSLineWithDllImport(id, funcName, funcType, retType, proxyType, params, isPromise) {
     switch (funcType) {
@@ -536,7 +536,6 @@ function generateUnityProxyCode(parseData, zipFileName) {
     addJSLine('},');
     addJSLine();
     addJSLine(`$${jslibName}: {`);
-    addJSIndent();
     addJSLine('instances: {},');
     callbackFuncs.forEach((func, idx)  => {
         addJSLine(`${func.id}_${func.funcName}: null${idx === callbackFuncs.length - 1 ? '' : ','}`);
