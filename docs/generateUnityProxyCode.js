@@ -377,7 +377,7 @@ function generateUnityProxyCode(parseData, zipFileName) {
     };
 
     zip = new JSZip();
-    zip.file('parseData.json', JSON.parse(parseData, null, 2));
+    zip.file('parseData.json', JSON.stringify(parseData, null, 2));
     //saveIdlCode('WebIDL.txt', 'WebIDLEnum.txt');
     Object.keys(parseData).forEach(group => {
         var callbackFuncs = [];
