@@ -83,8 +83,11 @@ function camelize(txt, forceUpperCase) {
     }).join('');
 }
 
+function getJSINdent(size, level) {
+    return [...Array(size * level)].map(x => ' ').join('');
+}
 function addJSIndent() {
-    jsCode += [...Array(jsIndentSize * jsIndentLevel)].map(x => ' ').join('');
+    jsCode += getJSINdent(jsIndentSize, jsIndentLevel);
 }
 function addJSCode(code = '', isIndent) {
     if (isIndent) addJSIndent();
@@ -96,7 +99,7 @@ function addJSLine(code = '') {
     jsCode += code + '\r\n';
     if (code.endsWith('{') || code.endsWith('(')) jsIndentLevel++;
 }
-function addJSLineWithDllImport(id, funcName, funcType, retType, proxyType, params, isPromise) {
+function addJSLineWithDllImport(id, funcName, funcType, retType, proxyType, params, isPromise, paramsMultiline) {
     switch (funcType) {
         case 'get':
             addJSLine(`${id}_get${funcName}: function(instanceId) {`);
@@ -117,6 +120,12 @@ function addJSLineWithDllImport(id, funcName, funcType, retType, proxyType, para
             break;
         case 'method':
             var paramString = params ? params.map(param => param.paramName).join(', ') : '';
+            var paramString = '';
+            if(paramsMultiline) {
+                paramString = `\r\n${getJSIndentSize(jsIndentSize, jsIndentLevel + 1)}${params.map(param => param.paramName).join(',\r\n')}`;
+            } else {
+                paramString = params ? params.map(param => param.paramName).join(', ') : '';
+            }
             addJSLine(`${id}_${funcName}: function(instanceId${paramString ? ', ' + paramString : ''}) {`);
             if(params) params.forEach(param => {
                 if (param.cs_type.proxyType === 'json') {
@@ -155,8 +164,11 @@ function saveJSCode(fileName) {
     jsIndentLevel = 0;
 }
 
+function getCSIndent(size, level){
+    return [...Array(size * level)].map(x => ' ').join('');
+}
 function addCSIndent() {
-    csCode += [...Array(csIndentSize * csIndentLevel)].map(x => ' ').join('');
+    csCode += getIndent(csIndentSize, csIndentLevel);
 }
 function addCSLine(code = '') {
     if (code.startsWith('}')) csIndentLevel--;
@@ -168,7 +180,7 @@ function addCSLineWithDllImport(id, funcName, funcType, retType, proxyType, para
     addCSLine('[DllImport("__Internal")]');
     var paramString = '';
     if(paramsMultiline) {
-        paramString = params ? '\r\n' + params.map(param => param.cs_type.typeName + ' ' + param.paramName).join(',\r\n') : '';
+        paramString = `\r\n${getCSIndent(csIndentSize, csIndentLevel + 1)}${params.map(param => param.cs_type.typeName + ' ' + param.paramName).join(',\r\n')}`;
     } else {
         paramString = params ? params.map(param => param.cs_type.typeName + ' ' + param.paramName).join(', ') : '';
     }
@@ -184,7 +196,7 @@ function addCSLineWithDllImport(id, funcName, funcType, retType, proxyType, para
             addCSLine(`${public ? 'public' : 'private'} static extern ${retType} ${id ? id + '_' : ''}${funcName}(string instanceId${paramString});`);
             break;
     }
-    addJSLineWithDllImport(id, funcName, funcType, retType, proxyType, params, isPromise);
+    addJSLineWithDllImport(id, funcName, funcType, retType, proxyType, params, isPromise, paramsMultiline);
 }
 function addCSLineWithMonoPInvokeCallback(id, funcName, isVoid, proxyType) {
     addCSLine(`[MonoPInvokeCallback(typeof(Action<string${isVoid ? '' : ', ' + proxyType}>))]`);
