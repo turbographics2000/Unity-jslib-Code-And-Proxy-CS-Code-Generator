@@ -540,15 +540,6 @@ function generateUnityProxyCode(parseData, zipFileName) {
     addCSLine('}');
     saveCSCode(`${jslibName}.cs`);
 
-    addJSLine('proxyInit: function(');
-    callbackFuncs.forEach((func, idx) => {
-        addJSLine(`${func.id}_${func.paramName}${idx === callbackFuncs.length - 1 ? '' : ','}`);
-    });
-    addJSLine(') {');
-    callbackFuncs.forEach((func, idx) => {
-        addJSLine(`${jslibName}.${func.id}_${func.paramName}${idx === callbackFuncs.length - 1 ? '' : ','}`);
-    });
-    addJSLine('},');
     addJSLine();
     addJSLine(`instance_dispose: function(instanceId) {`);
     addJSLine(`delete ${jslibName}.instances[instanceId];`);
