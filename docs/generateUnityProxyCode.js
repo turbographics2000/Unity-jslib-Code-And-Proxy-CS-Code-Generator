@@ -122,7 +122,7 @@ function addJSLineWithDllImport(id, funcName, funcType, retType, proxyType, para
             var paramString = params ? params.map(param => param.paramName).join(', ') : '';
             var paramString = '';
             if (paramsMultiline) {
-                paramString = `\r\n${getJSIndent(jsIndentSize, jsIndentLevel + 1)}${params.map(param => param.paramName).join(',\r\n')}`;
+                paramString = `\r\n${params.map(param => getJSIndent(jsIndentSize, jsIndentLevel + 1) + param.paramName).join(',\r\n')}`;
             } else {
                 paramString = params ? params.map(param => param.paramName).join(', ') : '';
             }
@@ -180,7 +180,7 @@ function addCSLineWithDllImport(id, funcName, funcType, retType, proxyType, para
     addCSLine('[DllImport("__Internal")]');
     var paramString = '';
     if (paramsMultiline) {
-        paramString = `\r\n${getCSIndent(csIndentSize, csIndentLevel + 1)}${params.map(param => param.cs_type.typeName + ' ' + param.paramName).join(',\r\n')}`;
+        paramString = `\r\n$${params.map(param => getCSIndent(csIndentSize, csIndentLevel + 1) + param.cs_type.typeName + ' ' + param.paramName).join(',\r\n')}`;
     } else {
         paramString = params ? params.map(param => param.cs_type.typeName + ' ' + param.paramName).join(', ') : '';
     }
