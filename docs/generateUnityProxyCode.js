@@ -67,7 +67,7 @@ var csIndentSize = 2;
 var csIndentLevel = 0;
 var useListClasses = [];
 var jslibName = 'UnityWebGLWebRTC';
-var pinvokeFuncs = [];
+var callbackFuncs = [];
 
 function camelize(txt, forceUpperCase) {
     if(!txt.split) debugger;
@@ -184,7 +184,7 @@ function addCSLineWithDllImport(id, funcName, funcType, retType, proxyType, para
 function addCSLineWithMonoPInvokeCallback(id, funcName, isVoid, proxyType) {
     addCSLine(`[MonoPInvokeCallback(typeof(Action<string${isVoid ? '' : ', ' + proxyType}>))]`);
     addCSLine(`public static void ${id}_res${funcName}(string instanceId${isVoid ? ', string error' : ', ' + proxyType + ' result'})`);
-    pinvokeFuncs.push({id, funcName, isVoid, proxyType});
+    callbackFuncs.push({id, funcName, isVoid, proxyType});
 }
 function saveCSCode(fileName) {
     zip.file(fileName, csCode);
@@ -216,10 +216,6 @@ function saveIdlCode(fileName, enumFileName) {
 
 function generateUnityProxyCode(parseData, zipFileName) {
     addJSLine(`${jslibName}Plugin = {`);
-    addJSLine(`$${jslibName}: {`);
-    addJSIndent();
-    addJSLine('instances: {}');
-    addJSLine('},');
 
     var attrOrMemberAddCSLine = (id, name, data) => {
         var camName = camelize(name, true);
@@ -383,7 +379,7 @@ function generateUnityProxyCode(parseData, zipFileName) {
     zip = new JSZip();
     saveIdlCode('WebIDL.txt', 'WebIDLEnum.txt');
     Object.keys(parseData).forEach(group => {
-        var pinvokeFuncs = [];
+        var callbackFuncs = [];
         var groupData = parseData[group];
         switch (group) {
             case 'Dictionary':
@@ -510,19 +506,41 @@ function generateUnityProxyCode(parseData, zipFileName) {
     addCSLine('{');
     addCSLineWithDllImport(`private static extern bool instance_dispose(string instanceId);`);
     addCSLine();
+    addCSLineWithDllImport('public static extern proxyInit(');
+    callbackFuncs.forEach((func, idx)  => {
+        addCSLine(`Action<string${func.isVoid ? '' : ', ' + func.proxyType}> ${func.id}.${func.funcName}${idx === callbackFuncs.length - 1 ? '' : ','}`);
+    });
+    addCSLine(');');
     addCSLine('public static ProxyInit()');
     addCSLine('{');
-    pinvokeFuncs.forEach((func, idx)  => {
-        addCSLine(`${id}.${funcName}${idx === pinvokeFuncs.length - 1 ? '' : ','}`);
+    callbackFuncs.forEach((func, idx)  => {
+        addCSLine(`${func.id}.${func.funcName}${idx === callbackFuncs.length - 1 ? '' : ','}`);
     });
     addCSLine('}');
     addCSLine('}');
     addCSLine('}');
     saveCSCode(`${jslibName}.cs`);
 
+    addJSLine('proxyInit: function(');
+    callbackFuncs.forEach((func, idx)  => {
+        addCSLine(`${func.id}_${func.funcName}${idx === callbackFuncs.length - 1 ? '' : ','}`);
+    });
+    addJSLine(') {');
+    callbackFuncs.forEach((func, idx)  => {
+        addCSLine(`${jslibName}.${func.id}_${func.funcName}${idx === callbackFuncs.length - 1 ? '' : ','}`);
+    });
+    addJSLine('},');    
     addJSLine();
     addJSLine(`instance_dispose: function(instanceId) {`);
     addJSLine(`delete ${jslibName}.instances[instanceId];`);
+    addJSLine('}');
+    addJSLine();
+    addJSLine(`$${jslibName}: {`);
+    addJSIndent();
+    addJSLine('instances: {},');
+    callbackFuncs.forEach((func, idx)  => {
+        addCSLine(`${func.id}_${func.funcName}: null${idx === callbackFuncs.length - 1 ? '' : ','}`);
+    });
     addJSLine('}');
     addJSLine('}');
     addJSLine(`autoAddDeps(${jslibName}Plugin, '$${jslibName}');`);
