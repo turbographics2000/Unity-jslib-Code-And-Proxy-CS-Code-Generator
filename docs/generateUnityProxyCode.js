@@ -141,8 +141,11 @@ function addJSLineWithDllImport(id, funcName, funcType, retType, proxyType, para
                 addJSLine(`_UnityCall(${id}_res${funcName}, args);`);
                 addJSLine('});');
             } else {
+                delim = paramsMultiline ? '\r\n' + getJSIndent(jsIndentSize, jsIndentLevel + 1) : '';
+                delim2 = paramsMultiline ? '\r\n' + getJSIndent(jsIndentSize, jsIndentLevel) : '';
+                paramString = params ? `${params.map(param => delim + param.paramName).join(',')}` : '';
                 if (retType === 'void') {
-                    addJSLine(`${jslibName}.instances[instanceId].${funcName}(${paramString});`);
+                    addJSLine(`${jslibName}.instances[instanceId].${funcName}(${paramString}${delim2});`);
                 } else {
                     addJSLine(`var res = ${jslibName}.instances[instanceId].${funcName}(${paramString});`);
                     if (proxyType === 'json') {
