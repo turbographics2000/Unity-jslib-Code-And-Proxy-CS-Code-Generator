@@ -83,11 +83,11 @@ function camelize(txt, forceUpperCase) {
     }).join('');
 }
 
-function getJSINdent(size, level) {
+function getJSIndent(size, level) {
     return [...Array(size * level)].map(x => ' ').join('');
 }
 function addJSIndent() {
-    jsCode += getJSINdent(jsIndentSize, jsIndentLevel);
+    jsCode += getJSIndent(jsIndentSize, jsIndentLevel);
 }
 function addJSCode(code = '', isIndent) {
     if (isIndent) addJSIndent();
@@ -122,7 +122,7 @@ function addJSLineWithDllImport(id, funcName, funcType, retType, proxyType, para
             var paramString = params ? params.map(param => param.paramName).join(', ') : '';
             var paramString = '';
             if(paramsMultiline) {
-                paramString = `\r\n${getJSIndentSize(jsIndentSize, jsIndentLevel + 1)}${params.map(param => param.paramName).join(',\r\n')}`;
+                paramString = `\r\n${getJSIndent(jsIndentSize, jsIndentLevel + 1)}${params.map(param => param.paramName).join(',\r\n')}`;
             } else {
                 paramString = params ? params.map(param => param.paramName).join(', ') : '';
             }
