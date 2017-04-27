@@ -521,7 +521,7 @@ function generateUnityProxyCode(parseData, zipFileName) {
             paramName: `${func.id}.${func.funcName}${idx === callbackFuncs.length - 1 ? '' : ','}`
         });
     });
-    addCSLineWithDllImport('', 'proxyInit', 'method', 'void', null, null, null, true, true);
+    addCSLineWithDllImport('', 'proxyInit', 'method', 'void', null, params, null, true, true);
     addCSLine('public static ProxyInit()');
     addCSLine('{');
     callbackFuncs.forEach((func, idx)  => {
