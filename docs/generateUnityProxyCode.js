@@ -202,6 +202,7 @@ function addCSLineWithMonoPInvokeCallback(id, funcName, isVoid, proxyType) {
     addCSLine(`[MonoPInvokeCallback(typeof(Action<string${isVoid ? '' : ', ' + proxyType}>))]`);
     addCSLine(`public static void ${id ? id + '_' : ''}res${funcName}(string instanceId${isVoid ? ', string error' : ', ' + proxyType + ' result'})`);
     callbackFuncs.push({
+        id,
         cs_type: {
             typeName: `Action<string${isVoid ? '' : ', ' + (proxyType === 'json' ? 'string' : proxyType)}>`
         },
@@ -533,7 +534,7 @@ function generateUnityProxyCode(parseData, zipFileName) {
     addCSLine('public static ProxyInit()');
     addCSLine('{');
     callbackFuncs.forEach((func, idx) => {
-        addCSLine(`${func.id}.${func.funcName}${idx === callbackFuncs.length - 1 ? '' : ','}`);
+        addCSLine(`${func.id}.${func.paramName}${idx === callbackFuncs.length - 1 ? '' : ','}`);
     });
     addCSLine('}');
     addCSLine('}');
@@ -542,11 +543,11 @@ function generateUnityProxyCode(parseData, zipFileName) {
 
     addJSLine('proxyInit: function(');
     callbackFuncs.forEach((func, idx) => {
-        addJSLine(`${func.id}_${func.funcName}${idx === callbackFuncs.length - 1 ? '' : ','}`);
+        addJSLine(`${func.id}_${func.paramName}${idx === callbackFuncs.length - 1 ? '' : ','}`);
     });
     addJSLine(') {');
     callbackFuncs.forEach((func, idx) => {
-        addJSLine(`${jslibName}.${func.id}_${func.funcName}${idx === callbackFuncs.length - 1 ? '' : ','}`);
+        addJSLine(`${jslibName}.${func.id}_${func.paramName}${idx === callbackFuncs.length - 1 ? '' : ','}`);
     });
     addJSLine('},');
     addJSLine();
