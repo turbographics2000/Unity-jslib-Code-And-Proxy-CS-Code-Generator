@@ -142,9 +142,9 @@ function addJSLineWithDllImport(id, funcName, funcType, retType, proxyType, para
                 addJSLine('});');
             } else {
                 if (retType === 'void') {
-                    addJSLine(`${id ? jslibName + '.': ''}instances[instanceId].${funcName}(${paramString});`);
+                    addJSLine(`${jslibName}.instances[instanceId].${funcName}(${paramString});`);
                 } else {
-                    addJSLine(`var res = ${id ? jslibName + '.': ''}instances[instanceId].${funcName}(${paramString});`);
+                    addJSLine(`var res = ${jslibName}.instances[instanceId].${funcName}(${paramString});`);
                     if (proxyType === 'json') {
                         addJSLine('res = JSON.stringify(res);');
                     }
