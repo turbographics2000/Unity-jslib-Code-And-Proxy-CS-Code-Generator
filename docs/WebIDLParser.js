@@ -229,8 +229,9 @@ function typeParse(typeElm) {
         }
         var typeNames = typeName.split(',').map(x => x.trim());
         if (type.record || type.maplike) {
-            type.key = Object.assign({}, type);
-            type.value = Object.assign({}, type);
+            var copy = Object.assign({}, type);
+            type.key = Object.assign({}, copy);
+            type.value = Object.assign({}, copy);
             type.key.typeName = typeNames[0];
             type.value.typeName = typeNames[1];
             addCSTypeInfo(type.key);
