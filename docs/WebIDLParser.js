@@ -125,6 +125,7 @@ function memberParse(groupElm, groupItemData, memberKind) {
             extAttrParse(elm, memberItemData);
 
             var params = paramParse(elm);
+            if(params) debugger;
             memberItemData.param_pattern = memberItemData.param_pattern || [];
             memberItemData.param_pattern.push(params);
 
