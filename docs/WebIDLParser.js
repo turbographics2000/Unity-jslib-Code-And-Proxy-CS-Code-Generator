@@ -231,10 +231,10 @@ function typeParse(typeElm) {
         if (type.record || type.maplike) {
             type.key = Object.assign({}, type);
             type.key.typeName = typeNames[0];
-            addCSTypeInfo(data.key);
+            addCSTypeInfo(type.key);
             type.value = Object.assign({}, type);
             type.value.typeName = typeNames[1];
-            addCSTypeInfo(data.value);
+            addCSTypeInfo(type.value);
         } else {
             type.typeName = type.maplike ? typeNames : typeNames[0];
             addCSTypeInfo(type);
