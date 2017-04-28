@@ -409,6 +409,8 @@ function generateUnityProxyCode(parseData, zipFileName) {
                             addCSLine(`public ${id} (${params.map(param => param.cs_type.typeName + ' ' + param.paramName).join(', ')})`);
                             addCSLine(`{`);
                             addCSLine(`InstanceId = ${id}_instantiate(${params.map(param => param.paramName).join(', ')});`);
+                            //data.EventHandler.forEach(eventHandlerName => {
+                            addCSLine(``)
                             addCSLine(`} `);
                         }
                         if (data.ctor && data.Ctor.param_pattern) {
@@ -442,7 +444,7 @@ function generateUnityProxyCode(parseData, zipFileName) {
                         data.EventHandler.forEach(eventHandlerName => {
                             addCSLine();
                             addCSLine(`[MonoPInvokeCallback(typeof (Action<string>))]`);
-                            addCSLine(`private static void _${eventHandlerName}(string instanceId) `);
+                            addCSLine(`public static void _${eventHandlerName}(string instanceId) `);
                             addCSLine('{');
                             addCSLine(`Instances[instanceId].${eventHandlerName}.Invoke();`);
                             addCSLine('}');

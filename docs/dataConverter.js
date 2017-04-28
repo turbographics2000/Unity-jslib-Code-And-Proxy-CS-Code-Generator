@@ -52,23 +52,30 @@ function convertToCSType(data, types) {
         var csType = {};
         csType.typeName = type.typeName;
         if (csType.typeName.endsWith('?')) {
-            csType.typeName = csType.typeName.substr(0, type.typeName.length - 1);
-            csType.nullable = true;
+            // csType.typeName = csType.typeName.substr(0, type.typeName.length - 1);
+            // csType.nullable = true;
+            type.csType = csType.typeName.substr(0, type.typeName.length - 1);
+            type.nullable = true;
         }
         csType.typeName = csTypeNames[csType.typeName.toLowerCase()] || csType.typeName;
-        if (type.sequence || type.typeName === 'ArrayBuffer' || type.typeName === 'ArrayBufferView') csType.array = true;
-        if (primitiveTypes.includes(csType.typeName)) csType.primitive = true;
-        if (csType.typeName === 'string' && csType.array) csType.primitive = false;
-        csType.proxyType = csType.primitive ? csType.typeName : 'json';
-        csTypes.push(csType);
+        // if (type.sequence || type.typeName === 'ArrayBuffer' || type.typeName === 'ArrayBufferView') csType.array = true;
+        // if (primitiveTypes.includes(csType.typeName)) csType.primitive = true;
+        // if (csType.typeName === 'string' && csType.array) csType.primitive = false;
+        // csType.proxyType = csType.primitive ? csType.typeName : 'json';
+        // csTypes.push(csType);
+        if (type.sequence || type.typeName === 'ArrayBuffer' || type.typeName === 'ArrayBufferView') type.array = true;
+        if (primitiveTypes.includes(csType.typeName)) type.primitive = true;
+        if (csType.typeName === 'string' && csType.array) type.primitive = false;
+        type.proxyType = csType.primitive ? csType.typeName : 'json';
     });
-    data.cs_type = csTypes;
+    //data.cs_type = csTypes;
 }
 
 function patternFilter(pattern, result) {
     if(!pattern.map) debugger;
     var pattern_string = pattern.map(p => {
-        return p.cs_type.typeName;
+        //return p.cs_type.typeName;
+        return p.data_type.typeName;
     }).join('');
     if (result.filter(res => res.pattern_string === pattern_string).length === 0) {
         result.push({
@@ -83,13 +90,18 @@ function generateParamPattern(param, idx, ptn, result) {
         patternFilter(ptn, result);
     } else {
         if (!param[idx].data_type) debugger;
-        for (var i = 0, l = param[idx].cs_type.length; i < l; i++) {
+        // for (var i = 0, l = param[idx].cs_type.length; i < l; i++) {
+        for (var i = 0, l = param[idx].data_type.length; i < l; i++) {
             var p = [].concat(ptn);
             var itm = {};
+            // Object.keys(param[idx]).forEach(key => {
+            //     if (!['data_type', 'cs_type'].includes(key)) itm[key] = param[idx][key];
+            // });
+            //itm.cs_type = param[idx].cs_type[i];
             Object.keys(param[idx]).forEach(key => {
-                if (!['data_type', 'cs_type'].includes(key)) itm[key] = param[idx][key];
+                if (key !== 'data_type') itm[key] = param[idx][key];
             });
-            itm.cs_type = param[idx].cs_type[i];
+            itm.data_type = param[idx].data_type[i];
             p.push(itm);
             generateParamPattern(param, idx + 1, p, result);
         }
