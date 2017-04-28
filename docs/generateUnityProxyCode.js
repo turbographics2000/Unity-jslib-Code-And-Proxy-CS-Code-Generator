@@ -284,10 +284,10 @@ function generateUnityProxyCode(parseData, zipFileName) {
         var proxyType = method.data_type[0].proxyType;
         var isPromise = method.Promise;
 
-        var paramPattern = method.param_pattern ? method.param_pattern : [{ pattern: [] }];
+        var paramPattern = method.cs_param_pattern ? method.cs_param_pattern : [];
 
         for (var i = 0, il = paramPattern.length; i < il; i++) {
-            var params = paramPattern[i].pattern;
+            var params = paramPattern[i];
             var paramTNO = params.map(param => {
                 var ret = `${param.data_type.csTypeName} ${param.paramName}`;
                 if (param.data_type.optional) {

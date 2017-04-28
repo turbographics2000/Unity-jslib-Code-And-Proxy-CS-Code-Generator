@@ -1,3 +1,46 @@
+var csTypeNames = {
+    'boolean': 'bool',
+    'byte': 'byte',
+    'short': 'short',
+    'long': 'int',
+    'long long': 'long',
+    'double': 'double',
+    'unsigned short': 'ushort',
+    'unsigned long': 'uint',
+    'unsigned long long': 'ulong',
+    'float': 'float',
+    'unrestricted float': 'float',
+    'double': 'double',
+    'unrestricted double': 'double',
+    'domstring': 'string',
+    'usvstring': 'string',
+    'object': 'object',
+    'void': 'void',
+    'arraybuffer': 'byte',
+    'arraybufferview': 'byte',
+    'domhighRestimestamp': 'TimeSpan',
+    'domtimestamp': 'TimeSpan',
+    'octet': 'byte',
+    'blob': 'FileInfo',
+    'record': 'dictionary'
+};
+
+var primitiveTypes = [
+    'void',
+    'bool',
+    'byte',
+    'sbyte',
+    'short',
+    'ushort',
+    'int',
+    'uint',
+    'long',
+    'ulong',
+    'float',
+    'double',
+    'string'
+];
+
 function WebIDLParse(docs, optimize) {
     var parseData = {};
 
@@ -69,15 +112,7 @@ function memberParse(groupElm, groupItemData, memberKind) {
             }
 
             var memberItemData = memberName ? memberData[memberName] = memberData[memberName] || {} : memberData;
-            if (['Ctor', 'Meth'].includes(memberKind)) {
-                if (memberItemData.param) {
-                    if (!memberItemData.over_load) {
-                        memberItemData.over_load = [];
-                        memberItemData.over_load.push(memberItemData.param);
-                        delete memberItemData.param;
-                    }
-                }
-            }
+
             if (types) memberItemData.data_type = types;
             var typeDec = /([a-z]+?)<(.+?)>/i.exec(getText(elm));
             var typeDecs = ['frozenarray', 'record', 'sequence'];
@@ -90,13 +125,8 @@ function memberParse(groupElm, groupItemData, memberKind) {
             extAttrParse(elm, memberItemData);
 
             var params = paramParse(elm);
-            if (params) {
-                if (memberItemData.over_load) {
-                    memberItemData.over_load.push(params);
-                } else {
-                    memberItemData.param = params;
-                }
-            }
+            memberItemData.param_pattern = memberItemData.param_pattern || [];
+            memberItemData.param_pattern.push(params);
 
             var defaultValue = getText(elm.querySelector(`.idl${memberKind}Value`));
             if (defaultValue) {
@@ -107,6 +137,11 @@ function memberParse(groupElm, groupItemData, memberKind) {
                 memberData = getText(elm);
             }
         });
+        Object.keys(memberData).forEach(memberName => {
+            if(memberData[memberName].param_pattern) {
+                paramPatternParse(memberData[memberName]);
+            }
+        })
     }
 }
 
@@ -160,8 +195,12 @@ function paramParse(target) {
         }
         var defaultValue = getText(param.querySelector('.idlMemberValue'));
         if (defaultValue) {
-            if (prm.data_type[0].isPrimitive && prm.data_type[0].typeName !== 'string') {
-                defaultValue = +defaultValue;
+            if (prm.data_type[0].isPrimitive) {
+                if(prm.data_type[0].typeName !== 'boolean') {
+                    defaultValue = defaultValue === 'true';
+                } else if(prm.data_type[0].typeName !== 'string') {
+                    defaultValue = +defaultValue;
+                }
             }
             prm.defaultValue = defaultValue;
         }
@@ -193,6 +232,17 @@ function typeParse(typeElm) {
         } else {
             type.typeName = type.maplike ? typeNames : typeNames[0];
         }
+        if (type.typeName.endsWith('?')) {
+            type.typeName = type.typeName.substr(0, type.typeName.length - 1);
+            type.nullable = true;
+        }
+
+        type.csTypeName = csTypeNames[type.typeName.toLowerCase()] || type.typeName;
+        if (type.sequence || type.typeName === 'ArrayBuffer' || type.typeName === 'ArrayBufferView') type.array = true;
+        if (primitiveTypes.includes(type.csTypeName)) type.primitive = true;
+        if (type.csTypeName === 'string' && type.array) type.primitive = false;
+        type.proxyType = type.primitive ? type.csTypeName : 'json';
+
         types.push(type);
     });
     return types;
@@ -205,6 +255,36 @@ function setKeyValueType(data, typeNames) {
     data.value = {
         typeName: typeNames[1]
     };
+}
+
+function paramPatternParse(data) {
+    for (var i = 0, il = data.param_pattern.length; i < il; i++) {
+        var results = [];
+        generateParamPattern(data.param_pattern[i], 0, [], results);
+        var patterns = data.cs_param_pattern = data.cs_param_pattern || [];
+        results.forEach(result => {
+            if(patterns.every(pattern => pattern.map(ptn => ptn.data_type.csTypeName).join('') !== result.map(res => res.data_type.csTypeName).join(''))) {
+                patterns.push(result);
+            }
+        });
+    }
+}
+
+function generateParamPattern(param, idx, ptn, results) {
+    for (var i = 0, l = param[idx].data_type.length; i < l; i++) {
+        var p = [].concat(ptn);
+        var itm = {};
+        Object.keys(param[idx]).forEach(key => {
+            if (key !== 'data_type') itm[key] = param[idx][key];
+        });
+        itm.data_type = param[idx].data_type[i];
+        p.push(itm);
+        if(idx + 1 === param.length) {
+            results.push(p);
+        } else {
+            generateParamPattern(param, idx + 1, p, result);
+        }
+    }
 }
 
 function dataOptimize(data) {

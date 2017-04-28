@@ -30,7 +30,6 @@ async function getDocs() {
 
 function parseAndGenerateCode(docs) {
     var data = WebIDLParse(docs);
-    convertToCSData(data);
     generateUnityProxyCode(data, 'UnityWebGLWebRTC');
 }
 
