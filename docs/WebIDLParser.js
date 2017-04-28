@@ -57,8 +57,7 @@ function WebIDLParse(docs, optimize) {
                 var types = typeParse(groupElm.querySelector('.idlMaplike'));
                 if (types) {
                     parseData.Maplike = parseData.Maplike || {};
-                    parseData.Maplike[id] = {};
-                    setKeyValueType(parseData.Maplike[id], types[0].typeName);
+                    parseData.Maplike[id] = types;
                     if (types[0].readonly) parseData.Maplike[id].readonly = true;
                     return;
                 }
@@ -229,7 +228,7 @@ function typeParse(typeElm) {
             typeName = typeDec[2];
         }
         var typeNames = typeName.split(',').map(x => x.trim());
-        if (type.record) {
+        if (type.record || type.maplike) {
             setKeyValueType(type, typeNames);
         } else {
             type.typeName = type.maplike ? typeNames : typeNames[0];
