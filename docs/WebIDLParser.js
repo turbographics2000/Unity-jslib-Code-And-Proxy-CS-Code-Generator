@@ -125,10 +125,11 @@ function memberParse(groupElm, groupItemData, memberKind) {
             extAttrParse(elm, memberItemData);
 
             var params = paramParse(elm);
-            if(params) debugger;
-            memberItemData.param_pattern = memberItemData.param_pattern || [];
-            memberItemData.param_pattern.push(params);
-
+            if(params) {
+                memberItemData.param_pattern = memberItemData.param_pattern || [];
+                memberItemData.param_pattern.push(params);
+            }
+        
             var defaultValue = getText(elm.querySelector(`.idl${memberKind}Value`));
             if (defaultValue) {
                 memberItemData.defaltValue = defaultValue.replace(/"/g, '');
