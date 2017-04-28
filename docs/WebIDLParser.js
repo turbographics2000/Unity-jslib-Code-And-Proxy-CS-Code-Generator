@@ -229,33 +229,33 @@ function typeParse(typeElm) {
         }
         var typeNames = typeName.split(',').map(x => x.trim());
         if (type.record || type.maplike) {
-            setKeyValueType(type, typeNames);
+            type.key = Object.assign({}, type);
+            type.key.typeName = typeNames[0];
+            addCSTypeInfo(data.key);
+            type.value = Object.assign({}, type);
+            type.value.typeName = typeNames[1];
+            addCSTypeInfo(data.value);
         } else {
             type.typeName = type.maplike ? typeNames : typeNames[0];
+            addCSTypeInfo(type);
         }
-        if (type.typeName.endsWith('?')) {
-            type.typeName = type.typeName.substr(0, type.typeName.length - 1);
-            type.nullable = true;
-        }
-
-        type.csTypeName = csTypeNames[type.typeName.toLowerCase()] || type.typeName;
-        if (type.sequence || type.typeName === 'ArrayBuffer' || type.typeName === 'ArrayBufferView') type.array = true;
-        if (primitiveTypes.includes(type.csTypeName)) type.primitive = true;
-        if (type.csTypeName === 'string' && type.array) type.primitive = false;
-        type.proxyType = type.primitive ? type.csTypeName : 'json';
 
         types.push(type);
     });
     return types;
 }
 
-function setKeyValueType(data, typeNames) {
-    data.key = {
-        typeName: typeNames[0]
-    };
-    data.value = {
-        typeName: typeNames[1]
-    };
+function addCSTypeInfo(type) {
+    if (type.typeName.endsWith('?')) {
+        type.typeName = type.typeName.substr(0, type.typeName.length - 1);
+        type.nullable = true;
+    }
+
+    type.csTypeName = csTypeNames[type.typeName.toLowerCase()] || type.typeName;
+    if (type.sequence || type.typeName === 'ArrayBuffer' || type.typeName === 'ArrayBufferView') type.array = true;
+    if (primitiveTypes.includes(type.csTypeName)) type.primitive = true;
+    if (type.csTypeName === 'string' && type.array) type.primitive = false;
+    type.proxyType = type.primitive ? type.csTypeName : 'json';
 }
 
 function paramPatternParse(data) {
