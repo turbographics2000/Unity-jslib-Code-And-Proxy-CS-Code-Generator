@@ -284,7 +284,7 @@ function generateParamPattern(param, idx, ptn, results) {
         if(idx + 1 === param.length) {
             results.push(p);
         } else {
-            generateParamPattern(param, idx + 1, p, result);
+            generateParamPattern(param, idx + 1, p, results);
         }
     }
 }
