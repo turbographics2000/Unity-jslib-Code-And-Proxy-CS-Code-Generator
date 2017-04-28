@@ -119,7 +119,6 @@ function addJSLineWithDllImport(id, funcName, funcType, retType, proxyType, para
             var paramString = params ? params.map(param => param.paramName).join(', ') : '';
             addJSLine(`${id}_${funcName}: function(instanceId${paramString ? ', ' + paramString : ''}) {`);
             if(params) params.forEach(param => {
-                //if (param.cs_type.proxyType === 'json') {
                 if (param.data_type.proxyType === 'json') {
                     addJSLine(`${param.paramName} = JSON.parse(${param.paramName});`);
                 }
@@ -167,8 +166,7 @@ function addCSLine(code = '') {
 }
 function addCSLineWithDllImport(id, funcName, funcType, retType, proxyType, params, isPromise) {
     addCSLine('[DllImport("__Internal")]');
-    //var paramString = params ? params.map(param => param.cs_type.typeName + ' ' + param.paramName).join(', ') : '';
-    var paramString = params ? params.map(param => param.data_type.typeName + ' ' + param.paramName).join(', ') : '';
+    var paramString = params ? params.map(param => param.data_type.csTypeName + ' ' + param.paramName).join(', ') : '';
     paramString = paramString ? ', ' + paramString : '';
     switch (funcType) {
         case 'get':
@@ -221,12 +219,11 @@ function generateUnityProxyCode(parseData, zipFileName) {
 
     var attrOrMemberAddCSLine = (id, name, data) => {
         var camName = camelize(name, true);
-        //var type = data.cs_type[0];
         var type = data.data_type[0];
         if (type.array && !type.primitive) {
-            useListClasses.push(type.typeName);
+            useListClasses.push(type.csTypeName);
         }
-        var retType = type.proxyType === 'json' ? 'string' : type.typeName;
+        var retType = type.proxyType === 'json' ? 'string' : type.csTypeName;
 
         addCSLine();
         //addCSLineWithDllImport(`private static extern ${retType} get${camName}(string instanceId);`);
@@ -236,17 +233,17 @@ function generateUnityProxyCode(parseData, zipFileName) {
             addCSLineWithDllImport(id, camName, 'set', retType, type);
         }
         if (type.array) {
-            addCSLine(`public ${type.typeName}[] ${name}`);
+            addCSLine(`public ${type.csTypeName}[] ${name}`);
             addCSLine('{');
             addCSLine('get');
             addCSLine('{');
             addCSLine(`var ret = get${camName}(InstanceId);`);
-            addCSLine(`return JsonUtility.FromJson<${type.typeName + 'Array'}>(ret).arr;`);
+            addCSLine(`return JsonUtility.FromJson<${type.csTypeName + 'Array'}>(ret).arr;`);
             addCSLine('}');
             if (!data.readonly) {
                 addCSLine('set');
                 addCSLine('{');
-                addCSLine(`var tmp = new ${type.typeName}Array();`);
+                addCSLine(`var tmp = new ${type.csTypeName}Array();`);
                 addCSLine('tmp.array = value;');
                 addCSLine('var json = JsonUtility.ToJson(tmp);');
                 addCSLine(`set${camName}(InstanceId, json);`);
@@ -254,7 +251,7 @@ function generateUnityProxyCode(parseData, zipFileName) {
             }
             addCSLine('}');
         } else {
-            addCSLine(`public ${type.typeName} ${name}`);
+            addCSLine(`public ${type.csTypeName} ${name}`);
             addCSLine('{');
             addCSLine('get');
             addCSLine('{');
@@ -262,7 +259,7 @@ function generateUnityProxyCode(parseData, zipFileName) {
                 addCSLine(`return get${camName}(InstanceId);`);
             } else {
                 addCSLine(`var ret = get${camName}(InstanceId);`);
-                addCSLine(`return JsonUtility.FromJson<${type.typeName}>(ret);`);
+                addCSLine(`return JsonUtility.FromJson<${type.csTypeName}>(ret);`);
             }
             addCSLine('}');
             if (!data.readonly) {
@@ -281,13 +278,9 @@ function generateUnityProxyCode(parseData, zipFileName) {
     };
 
     var methodAddCSLine = (id, methodName, method) => {
-        // var isVoid = method.cs_type[0].typeName === 'void';
-        // var isPrimitive = method.cs_type[0].primitive;
-        // var retType = method.cs_type[0].typeName;
-        // var proxyType = method.cs_type[0].proxyType;
-        var isVoid = method.data_type[0].typeName === 'void';
+        var isVoid = method.data_type[0].csTypeName === 'void';
         var isPrimitive = method.data_type[0].primitive;
-        var retType = method.data_type[0].typeName;
+        var retType = method.data_type[0].csTypeName;
         var proxyType = method.data_type[0].proxyType;
         var isPromise = method.Promise;
 
@@ -296,9 +289,7 @@ function generateUnityProxyCode(parseData, zipFileName) {
         for (var i = 0, il = paramPattern.length; i < il; i++) {
             var params = paramPattern[i].pattern;
             var paramTNO = params.map(param => {
-                // var ret = `${param.cs_type.typeName} ${param.paramName}`;
-                // if (param.cs_type.optional) {
-                var ret = `${param.data_type.typeName} ${param.paramName}`;
+                var ret = `${param.data_type.csTypeName} ${param.paramName}`;
                 if (param.data_type.optional) {
                     if (param.primitive) {
                         ret += ` = ${primitiveDefault[param.paramName]}`;
@@ -311,8 +302,7 @@ function generateUnityProxyCode(parseData, zipFileName) {
             paramTNO = paramTNO ? ', ' + paramTNO : '';
             var paramN = params.map(param => param.paramName).join(', ');
             paramN = paramN ? ', ' + paramN : '';
-            //var paramTN = params.map(param => param.cs_type.typeName + ' ' + param.paramName).join(', ');
-            var paramTN = params.map(param => param.data_type.typeName + ' ' + param.paramName).join(', ');
+            var paramTN = params.map(param => param.data_type.csTypeName + ' ' + param.paramName).join(', ');
             paramTN = paramTN ? ', ' + paramTN : '';
 
             addCSLine();
@@ -416,8 +406,7 @@ function generateUnityProxyCode(parseData, zipFileName) {
                         var ctorCSLine = function (params) {
                             addCSLine();
                             addCSLineWithDllImport(id, 'instantiate', 'method', 'void', null, null, false)
-                            //addCSLine(`public ${id} (${params.map(param => param.cs_type.typeName + ' ' + param.paramName).join(', ')})`);
-                            addCSLine(`public ${id} (${params.map(param => param.data_type.typeName + ' ' + param.paramName).join(', ')})`);
+                            addCSLine(`public ${id} (${params.map(param => param.data_type.csTypeName + ' ' + param.paramName).join(', ')})`);
                             addCSLine(`{`);
                             addCSLine(`InstanceId = ${id}_instantiate(${params.map(param => param.paramName).join(', ')});`);
                             //data.EventHandler.forEach(eventHandlerName => {
