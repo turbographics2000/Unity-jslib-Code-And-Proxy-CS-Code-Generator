@@ -67,7 +67,7 @@ function WebIDLParse(docs, optimize) {
                     case 'Interface':
                         var superclass = getText(groupElm.querySelector('.idlSuperclass'));
                         if (superclass) groupItemData.Superclass = superclass;
-                        ['Ctor', 'Attribute', 'Member', 'Method', 'Maplike'].forEach(memberKind => {
+                        ['Ctor', 'Attribute', 'Member', 'Method'].forEach(memberKind => {
                             memberParse(groupElm, groupItemData, memberKind);
                         })
                         break;
