@@ -119,7 +119,8 @@ function addJSLineWithDllImport(id, funcName, funcType, retType, proxyType, para
             var paramString = params ? params.map(param => param.paramName).join(', ') : '';
             addJSLine(`${id}_${funcName}: function(instanceId${paramString ? ', ' + paramString : ''}) {`);
             if(params) params.forEach(param => {
-                if (param.cs_type.proxyType === 'json') {
+                //if (param.cs_type.proxyType === 'json') {
+                if (param.data_type.proxyType === 'json') {
                     addJSLine(`${param.paramName} = JSON.parse(${param.paramName});`);
                 }
             });
@@ -166,7 +167,8 @@ function addCSLine(code = '') {
 }
 function addCSLineWithDllImport(id, funcName, funcType, retType, proxyType, params, isPromise) {
     addCSLine('[DllImport("__Internal")]');
-    var paramString = params ? params.map(param => param.cs_type.typeName + ' ' + param.paramName).join(', ') : '';
+    //var paramString = params ? params.map(param => param.cs_type.typeName + ' ' + param.paramName).join(', ') : '';
+    var paramString = params ? params.map(param => param.data_type.typeName + ' ' + param.paramName).join(', ') : '';
     paramString = paramString ? ', ' + paramString : '';
     switch (funcType) {
         case 'get':
@@ -219,7 +221,8 @@ function generateUnityProxyCode(parseData, zipFileName) {
 
     var attrOrMemberAddCSLine = (id, name, data) => {
         var camName = camelize(name, true);
-        var type = data.cs_type[0];
+        //var type = data.cs_type[0];
+        var type = data.data_type[0];
         if (type.array && !type.primitive) {
             useListClasses.push(type.typeName);
         }
@@ -278,10 +281,14 @@ function generateUnityProxyCode(parseData, zipFileName) {
     };
 
     var methodAddCSLine = (id, methodName, method) => {
-        var isVoid = method.cs_type[0].typeName === 'void';
-        var isPrimitive = method.cs_type[0].primitive;
-        var retType = method.cs_type[0].typeName;
-        var proxyType = method.cs_type[0].proxyType;
+        // var isVoid = method.cs_type[0].typeName === 'void';
+        // var isPrimitive = method.cs_type[0].primitive;
+        // var retType = method.cs_type[0].typeName;
+        // var proxyType = method.cs_type[0].proxyType;
+        var isVoid = method.data_type[0].typeName === 'void';
+        var isPrimitive = method.data_type[0].primitive;
+        var retType = method.data_type[0].typeName;
+        var proxyType = method.data_type[0].proxyType;
         var isPromise = method.Promise;
 
         var paramPattern = method.param_pattern ? method.param_pattern : [{ pattern: [] }];
@@ -289,8 +296,10 @@ function generateUnityProxyCode(parseData, zipFileName) {
         for (var i = 0, il = paramPattern.length; i < il; i++) {
             var params = paramPattern[i].pattern;
             var paramTNO = params.map(param => {
-                var ret = `${param.cs_type.typeName} ${param.paramName}`;
-                if (param.cs_type.optional) {
+                // var ret = `${param.cs_type.typeName} ${param.paramName}`;
+                // if (param.cs_type.optional) {
+                var ret = `${param.data_type.typeName} ${param.paramName}`;
+                if (param.data_type.optional) {
                     if (param.primitive) {
                         ret += ` = ${primitiveDefault[param.paramName]}`;
                     } else {
@@ -302,7 +311,8 @@ function generateUnityProxyCode(parseData, zipFileName) {
             paramTNO = paramTNO ? ', ' + paramTNO : '';
             var paramN = params.map(param => param.paramName).join(', ');
             paramN = paramN ? ', ' + paramN : '';
-            var paramTN = params.map(param => param.cs_type.typeName + ' ' + param.paramName).join(', ');
+            //var paramTN = params.map(param => param.cs_type.typeName + ' ' + param.paramName).join(', ');
+            var paramTN = params.map(param => param.data_type.typeName + ' ' + param.paramName).join(', ');
             paramTN = paramTN ? ', ' + paramTN : '';
 
             addCSLine();
@@ -406,7 +416,8 @@ function generateUnityProxyCode(parseData, zipFileName) {
                         var ctorCSLine = function (params) {
                             addCSLine();
                             addCSLineWithDllImport(id, 'instantiate', 'method', 'void', null, null, false)
-                            addCSLine(`public ${id} (${params.map(param => param.cs_type.typeName + ' ' + param.paramName).join(', ')})`);
+                            //addCSLine(`public ${id} (${params.map(param => param.cs_type.typeName + ' ' + param.paramName).join(', ')})`);
+                            addCSLine(`public ${id} (${params.map(param => param.data_type.typeName + ' ' + param.paramName).join(', ')})`);
                             addCSLine(`{`);
                             addCSLine(`InstanceId = ${id}_instantiate(${params.map(param => param.paramName).join(', ')});`);
                             //data.EventHandler.forEach(eventHandlerName => {
