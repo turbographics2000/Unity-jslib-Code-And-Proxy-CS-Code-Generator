@@ -70,7 +70,7 @@ var jslibName = 'UnityWebGLWebRTC';
 var callbackFuncs = [];
 
 function camelize(txt, forceUpperCase) {
-    if(!txt.split) debugger;
+    if (!txt.split) debugger;
     if (txt === 'new') return 'New';
     return txt.split('-').map((elm, idx) => {
         var arr = elm.split('');
@@ -118,7 +118,7 @@ function addJSLineWithDllImport(id, funcName, funcType, retType, proxyType, para
         case 'method':
             var paramString = params ? params.map(param => param.paramName).join(', ') : '';
             addJSLine(`${id}_${funcName}: function(instanceId${paramString ? ', ' + paramString : ''}) {`);
-            if(params) params.forEach(param => {
+            if (params) params.forEach(param => {
                 if (param.data_type.proxyType === 'json') {
                     addJSLine(`${param.paramName} = JSON.parse(${param.paramName});`);
                 }
@@ -184,7 +184,7 @@ function addCSLineWithDllImport(id, funcName, funcType, retType, proxyType, para
 function addCSLineWithMonoPInvokeCallback(id, funcName, isVoid, proxyType) {
     addCSLine(`[MonoPInvokeCallback(typeof(Action<string${isVoid ? '' : ', ' + proxyType}>))]`);
     addCSLine(`public static void ${id}_res${funcName}(string instanceId${isVoid ? ', string error' : ', ' + proxyType + ' result'})`);
-    callbackFuncs.push({id, funcName, isVoid, proxyType});
+    callbackFuncs.push({ id, funcName, isVoid, proxyType });
 }
 function saveCSCode(fileName) {
     zip.file(fileName, csCode);
@@ -398,7 +398,7 @@ function generateUnityProxyCode(parseData, zipFileName) {
                     addCSLine('{');
                     addCSLine(`public class ${id}${data.Superclass ? ' : ' + data.SuperClass : ''}`);
                     addCSLine('{');
-                    addCSLine(`public static Dictionary<string, ${id}> Instances; `);
+                    addCSLine(`public static Dictionary<string, ${id}> Instances;`);
                     addCSLine('public string InstanceId;');
                     addCSLine('public string error;');
 
@@ -459,7 +459,7 @@ function generateUnityProxyCode(parseData, zipFileName) {
                     addCSLine('throw new Exception("Dispose error.")');
                     addCSLine('}');
                     addCSLine('}');
-                    
+
                     saveCSCode(id + '.cs');
 
                     if (useListClasses.includes(id)) {
@@ -501,7 +501,159 @@ function generateUnityProxyCode(parseData, zipFileName) {
         }
     });
 
+    // var itemTypes = ['sbyte', 'byte', 'short', 'ushort', 'int', 'uint', 'float', 'double'];
+    // ['ArrayBuffer', 'TypedArray'].forEach(className => {
+    //     addCSLine('using AOT;');
+    //     addCSLine('using RSG;');
+    //     addCSLine('using System;');
+    //     addCSLine('using System.Collections.Generic;');
+    //     addCSLine('using System.Runtime.InteropServices;');
+    //     addCSLine('using UnityEngine;');
+    //     addCSLine();
+    //     addCSLine(`namespace ${jslibName}Proxy`);
+    //     addCSLine('{');
+    //     addCSLine(`public ${className === 'TypedArray' ? 'abstract' : ''} class ${className}`);
+    //     addCSLine('{');
+    //     addCSLine(`public Dictionary<string, ${className}> Instances;`);
+    //     addCSLine('public string InstanceId');
+    //     if (className === 'TypeArray') addCSLine('public string BufferInstanceId');
+    //     addCSLine();
+    //     addCSLine('[DllImport("__Internal")]');
+    //     addCSLine(`private static extern string ${className}_instantiate(int length);`);
+    //     addCSLine('[DllImport("__Internal")]');
+    //     addCSLine('private static extern int getByteLength(string instanceId)');
+    //     addCSLine();
+    //     if (className === 'TypeArray') {
+    //         addCSLine('[DllImport("__Internal")]');
+    //         addCSLine(`protected static extern string TypedArray_instantiate(string ArrayBufferInstanceId, int offset, int length);`);
+
+    //         itemTypes.forEach(itemTypeName => {
+    //             addCSLine('[DllImport("__Internal")]');
+    //             addCSLine(`protected static extern string TypedArray_instantiate_from_${itemTypeName}_array(${itemTypeName}[] srcArray);`);
+    //             addCSLine();
+    //         });
+
+
+    //         addCSLine('public buffer');
+    //         addCSLine('{');
+    //         addCSLine('get');
+    //         addCSLine('{');
+    //         addCSLine('var bufferInstanceId = TypedArray_getBuffer(InstanceId);');
+    //         addCSLine('return ArrayBuffer.Instances[bufferInstanceId];');
+    //         addCSLine('}');
+    //         addCSLine('}');
+    //         addCSLine();
+    //         addCSLine('public int byteOffset');
+    //         addCSLine('{');
+    //         addCSLine('get');
+    //         addCSLine('{');
+    //         addCSLine('var byteOffset = TypedArray_getByteOffset(InstanceId);');
+    //         addCSLine('return byteOffset');
+    //         addCSLine('}');
+    //         addCSLine('}');
+    //         addCSLine();
+    //         addCSLine('public int length');
+    //         addCSLine('{');
+    //         addCSLine('get');
+    //         addCSLine('{');
+    //         addCSLine('var length = TypedArray_getLength(InstanceId);');
+    //         addCSLine('return length');
+    //         addCSLine('}');
+    //         addCSLine('}');
+    //         addCSLine();
+
+    //         addCSLine(`public ${className}(int length)`);
+    //         addCSLine('{');
+    //         addCSLine(`var InstanceId = ${className}_instantiate(length);`);
+    //         addCSLine('var bufferInstanceId = TypedArray_getBuffer(InstanceId);');
+    //         addCSLine('}');
+    //         addCSLine();
+    //         addCSLine(`public ${className}(TypedArray src)`);
+    //         addCSLine('{');
+    //         addCSLine(`var InstanceId = ${className}_instantiate(src.instanceId);`);
+    //         addCSLine('var bufferInstanceId = TypedArray_getBuffer(InstanceId);');
+    //         addCSLine('}');
+    //         addCSLine();
+    //         addCSLine(`public ${className}(ArrayBuffer src, int index, int length)`);
+    //         addCSLine('{');
+    //         addCSLine(`var InstanceId = ${className}_instantiate(src.instanceId, index, length);`);
+    //         addCSLine('var bufferInstanceId = TypedArray_getBuffer(InstanceId);');
+    //         addCSLine('}');
+    //         addCSLine();
+    //         ['sbyte', 'byte', 'short', 'ushort', 'int', 'uint', 'float', 'double'].forEach(typeName => {
+    //             addCSLine(`public ${className}(${typeName}[] src)`);
+    //             addCSLine('{');
+    //             addCSLine(`var InstanceId = ${className}_instantiate(src);`);
+    //             addCSLine('var bufferInstanceId = TypedArray_getBuffer(InstanceId);');
+    //             addCSLine('}');
+    //             addCSLine();
+    //         });
+    //         addCSLine('public int this[int index]');
+    //         addCSLine('{');
+    //         addCSLine('get');
+    //         addCSLine('{');
+    //         addCSLine('var value = TypedArray_getValue(InstanceId, index);');
+    //         addCSLine('return value;');
+    //         addCSLine('}');
+    //         addCSLine('}');
+    //         addCSLine();
+    //     } else {
+    //         addCSLine('[DllImport("__Internal")]');
+    //         addCSLine('private static extern void slice(string instanceId, int begin, int end);');
+    //         addCSLine();
+    //         addCSLine(`public ${className}(int length)`);
+    //         addCSLine('{');
+    //         addCSLine(`var InstanceId = ${className}_instantiate(length);`);
+    //         addCSLine('}');
+    //         addCSLine();
+    //     }
+    //     addCSLine('public int byteLength');
+    //     addCSLine('{');
+    //     addCSLine('get');
+    //     addCSLine('{');
+    //     addCSLine('var byteLength = getByteLength(InstanceId);');
+    //     addCSLine('return byteLength;');
+    //     addCSLine('}');
+    //     addCSLine('}');
+    //     addCSLine();
+
+    //     addCSLine('}');
+    //     addCSLine('}');
+    //     saveCSCode(`${className}.cs`);
+    // });
+
+    [
+        'Int8Array',
+        'Uint8Array',
+        'Uint8ClampedArray',
+        'Int16Array',
+        'Uint16Array',
+        'Int32Array',
+        'Uint32Array',
+        'Fload32Array',
+        'Float64Array'
+    ].forEach(className => {
+        addCSLine('using AOT;');
+        addCSLine('using RSG;');
+        addCSLine('using System;');
+        addCSLine('using System.Collections.Generic;');
+        addCSLine('using System.Runtime.InteropServices;');
+        addCSLine('using UnityEngine;');
+        addCSLine();
+        addCSLine(`namespace ${jslibName}Proxy`);
+        addCSLine('{');
+        addCSLine(`public class ${className} : TypedArray`);
+        addCSLine('{');
+        addCSLine('}');
+        addCSLine('}');
+        saveCSCode(`${className}.cs`);
+    });
+
+    addCSLine('using AOT;');
+    addCSLine('using RSG;');
     addCSLine('using System;');
+    addCSLine('using System.Collections.Generic;');
+    addCSLine('using System.Runtime.InteropServices;');
     addCSLine('using UnityEngine;');
     addCSLine();
     addCSLine(`namespace ${jslibName}Proxy`);
@@ -513,13 +665,13 @@ function generateUnityProxyCode(parseData, zipFileName) {
     addCSLine();
     addCSLine('[DllImport("__Internal")]');
     addCSLine('public static extern proxyInit(');
-    callbackFuncs.forEach((func, idx)  => {
+    callbackFuncs.forEach((func, idx) => {
         addCSLine(`Action<string${func.isVoid ? '' : ', ' + func.proxyType}> ${func.id}.${func.funcName}${idx === callbackFuncs.length - 1 ? '' : ','}`);
     });
     addCSLine(');');
     addCSLine('public static ProxyInit()');
     addCSLine('{');
-    callbackFuncs.forEach((func, idx)  => {
+    callbackFuncs.forEach((func, idx) => {
         addCSLine(`${func.id}.${func.funcName}${idx === callbackFuncs.length - 1 ? '' : ','}`);
     });
     addCSLine('}');
@@ -528,14 +680,14 @@ function generateUnityProxyCode(parseData, zipFileName) {
     saveCSCode(`${jslibName}.cs`);
 
     addJSLine('proxyInit: function(');
-    callbackFuncs.forEach((func, idx)  => {
+    callbackFuncs.forEach((func, idx) => {
         addJSLine(`${func.id}_${func.funcName}${idx === callbackFuncs.length - 1 ? '' : ','}`);
     });
     addJSLine(') {');
-    callbackFuncs.forEach((func, idx)  => {
+    callbackFuncs.forEach((func, idx) => {
         addJSLine(`${jslibName}.${func.id}_${func.funcName} = ${func.funcName};`);
     });
-    addJSLine('},');    
+    addJSLine('},');
     addJSLine();
     addJSLine(`instance_dispose: function(instanceId) {`);
     addJSLine(`delete ${jslibName}.instances[instanceId];`);
@@ -543,7 +695,7 @@ function generateUnityProxyCode(parseData, zipFileName) {
     addJSLine();
     addJSLine(`$${jslibName}: {`);
     addJSLine('instances: {},');
-    callbackFuncs.forEach((func, idx)  => {
+    callbackFuncs.forEach((func, idx) => {
         addJSLine(`${func.id}_${func.funcName}: null${idx === callbackFuncs.length - 1 ? '' : ','}`);
     });
     addJSLine('}');

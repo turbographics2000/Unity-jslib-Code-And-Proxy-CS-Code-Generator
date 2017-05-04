@@ -90,7 +90,7 @@ function WebIDLParse(docs, optimize) {
             dataOptimize2(parseData);
         }
     });
-    
+
     return parseData;
 }
 
@@ -124,11 +124,11 @@ function memberParse(groupElm, groupItemData, memberKind) {
             extAttrParse(elm, memberItemData);
 
             var params = paramParse(elm);
-            if(params) {
+            if (params) {
                 memberItemData.param_pattern = memberItemData.param_pattern || [];
                 memberItemData.param_pattern.push(params);
             }
-        
+
             var defaultValue = getText(elm.querySelector(`.idl${memberKind}Value`));
             if (defaultValue) {
                 memberItemData.defaltValue = defaultValue.replace(/"/g, '');
@@ -139,7 +139,7 @@ function memberParse(groupElm, groupItemData, memberKind) {
             }
         });
         Object.keys(memberData).forEach(memberName => {
-            if(memberData[memberName].param_pattern) {
+            if (memberData[memberName].param_pattern) {
                 paramPatternParse(memberData[memberName]);
             }
         })
@@ -197,9 +197,9 @@ function paramParse(target) {
         var defaultValue = getText(param.querySelector('.idlMemberValue'));
         if (defaultValue) {
             if (prm.data_type[0].isPrimitive) {
-                if(prm.data_type[0].typeName !== 'boolean') {
+                if (prm.data_type[0].typeName !== 'boolean') {
                     defaultValue = defaultValue === 'true';
-                } else if(prm.data_type[0].typeName !== 'string') {
+                } else if (prm.data_type[0].typeName !== 'string') {
                     defaultValue = +defaultValue;
                 }
             }
@@ -257,7 +257,8 @@ function addCSTypeInfo(type) {
     type.csTypeName = csTypeNames[type.typeName.toLowerCase()] || type.typeName;
     if (type.sequence || type.typeName === 'ArrayBuffer' || type.typeName === 'ArrayBufferView') type.array = true;
     if (primitiveTypes.includes(type.csTypeName)) type.primitive = true;
-    if (type.csTypeName === 'string' && type.array) type.primitive = false;
+    if ((type.csTypeName === 'string' && type.array) || (type.sequence && type.array)) type.primitive = false;
+    
     type.proxyType = type.primitive ? type.csTypeName : 'json';
 }
 
@@ -267,9 +268,11 @@ function paramPatternParse(data) {
         generateParamPattern(data.param_pattern[i], 0, [], results);
         var patterns = data.cs_param_pattern = data.cs_param_pattern || [];
         results.forEach(result => {
-            if(patterns.every(pattern => pattern.map(ptn => ptn.data_type.csTypeName).join('') !== result.map(res => res.data_type.csTypeName).join(''))) {
-                patterns.push(result);
-            }
+            patterns.forEach(pattern => pattern.map(ptn => {
+                if (result.every(res => JSON.stringify(res) !== JSON.stringify())) {
+                    patterns.push(result);
+                }
+            }));
         });
     }
 }
@@ -283,7 +286,7 @@ function generateParamPattern(param, idx, ptn, results) {
         });
         itm.data_type = param[idx].data_type[i];
         p.push(itm);
-        if(idx + 1 === param.length) {
+        if (idx + 1 === param.length) {
             results.push(p);
         } else {
             generateParamPattern(param, idx + 1, p, results);
