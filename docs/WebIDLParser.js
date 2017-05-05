@@ -138,11 +138,13 @@ function memberParse(groupElm, groupItemData, memberKind) {
                 memberData = getText(elm);
             }
         });
-        Object.keys(memberData).forEach(memberName => {
-            if (memberData[memberName].param_pattern) {
-                paramPatternParse(memberData[memberName]);
-            }
-        })
+        if (memberData) {
+            Object.keys(memberData).forEach(memberName => {
+                if (memberData[memberName].param_pattern) {
+                    paramPatternParse(memberData[memberName]);
+                }
+            });
+        }
     }
 }
 
@@ -158,7 +160,7 @@ function extAttrParse(target, parseData) {
     extAttrElms.forEach(elm => {
         var extAttr = {};
         var name = getText(elm.querySelector('.extAttrName')).trim();
-        if(!name) return;
+        if (!name) return;
         extAttr.extAttrName = name;
         var rhs = getText(elm.querySelector('.extAttrRhs'));
         if (rhs) extAttr.extAttrRhs = rhs;
