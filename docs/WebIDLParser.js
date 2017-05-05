@@ -98,7 +98,6 @@ function memberParse(groupElm, groupItemData, memberKind) {
     var memberElms = groupElm.querySelectorAll(`.idl${memberKind}`);
     if (memberElms.length) {
         var memberData = null;
-        memberData = groupItemData[memberKind] = groupItemData[memberKind] || {};
         memberElms.forEach(elm => {
             memberKind = { Attribute: 'Attr', Method: 'Meth' }[memberKind] || memberKind;
             var memberName = getText(elm.querySelector(`.idl${memberKind}Name`));
@@ -110,6 +109,7 @@ function memberParse(groupElm, groupItemData, memberKind) {
                 return;
             }
 
+            memberData = groupItemData[memberKind] = groupItemData[memberKind] || {};
             var memberItemData = memberName ? memberData[memberName] = memberData[memberName] || {} : memberData;
 
             if (types) memberItemData.data_type = types;
