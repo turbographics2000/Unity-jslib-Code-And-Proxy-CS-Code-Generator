@@ -222,10 +222,8 @@ function generateUnityProxyCode(parseData, zipFileName) {
         var retType = !!type.proxyJSON ? 'string' : type.csTypeName;
 
         addCSLine();
-        //addCSLineWithDllImport(`private static extern ${retType} get${camName}(string instanceId);`);
         addCSLineWithDllImport(id, camName, 'get', retType, type);
         if (!data.readonly) {
-            //addCSLineWithDllImport(`private static extern void set${camName}(string instanceId, ${retType} value);`);
             addCSLineWithDllImport(id, camName, 'set', retType, type);
         }
         if (type.array) {
@@ -304,10 +302,7 @@ function generateUnityProxyCode(parseData, zipFileName) {
             addCSLine();
             if (isPromise) {
                 addCSLine(`private Action<${isVoid ? 'string' : proxyJSON}> ${id}___${methodName};`);
-                //addCSLineWithDllImport(`private static extern void _${methodName}(string instanceId${paramTN})`);
                 addCSLineWithDllImport(id, '_' + methodName, 'method', 'void', proxyJSON, params, true);
-                // addCSLine(`[MonoPInvokeCallback(typeof(Action<string${isVoid ? '' : ', ' + proxyJSON}>))]`);
-                // addCSLine(`private static void res${methodName}(string instanceId${isVoid ? ', string error' : ', ' + proxyJSON + 'result'})`);
                 addCSLineWithMonoPInvokeCallback(id, methodName, isVoid, proxyJSON);
                 addCSLine('{');
                 if (isPrimitive) {
@@ -352,7 +347,6 @@ function generateUnityProxyCode(parseData, zipFileName) {
                 addCSLine('return promise;');
                 addCSLine('}');
             } else {
-                //addCSLineWithDllImport(`private static extern ${retType} _${methodName}(string instanceId${strParamTN});`);
                 addCSLineWithDllImport(id, methodName, 'method', retType, proxyJSON, params);
                 addCSLine(`public ${retType} ${methodName}(${paramTNO})`);
                 addCSLine('{');
