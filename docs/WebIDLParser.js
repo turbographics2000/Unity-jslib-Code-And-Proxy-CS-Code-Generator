@@ -45,7 +45,7 @@ function WebIDLParse(docs, optimize) {
     var parseData = {};
 
     docs.forEach(doc => {
-        var groups = Array.from(doc.querySelectorAll('.idl *[class$=ID]'))
+        var groups = [...doc.querySelectorAll('.idl *[class$=ID]')]
             .map(elm => elm.className.replace(/^idl(.+?)ID$/, (a, b) => b))
             .filter((val, idx, arr) => arr.indexOf(val) === idx);
         groups.forEach(group => { // Dictionary, Interface, Enum, Callback ...
@@ -253,13 +253,16 @@ function addCSTypeInfo(type) {
         type.typeName = type.typeName.substr(0, type.typeName.length - 1);
         type.nullable = true;
     }
-
     type.csTypeName = csTypeNames[type.typeName.toLowerCase()] || type.typeName;
-    if (type.sequence || type.typeName === 'ArrayBuffer' || type.typeName === 'ArrayBufferView') type.array = true;
-    if (primitiveTypes.includes(type.csTypeName)) type.primitive = true;
-    if ((type.csTypeName === 'string' && type.array) || (type.sequence && type.array)) type.primitive = false;
-    
-    type.proxyType = type.primitive ? type.csTypeName : 'json';
+    if (type.typeName === 'ArrayBuffer' || type.typeName === 'ArrayBufferView') {
+        type.array = true;
+    }
+    if (primitiveTypes.includes(type.csTypeName)) {
+        type.primitive = true;
+    }
+    if (!type.primitive || (type.csTypeName === 'string' && type.array) || (type.sequence && type.array)) {
+        type.proxyJSON = true;
+    }
 }
 
 function paramPatternParse(data) {
