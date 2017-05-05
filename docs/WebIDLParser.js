@@ -275,7 +275,7 @@ function paramPatternParse(data) {
         var patterns = data.cs_param_pattern = data.cs_param_pattern || [];
         results.forEach(result => {
             patterns.forEach(pattern => pattern.map(ptn => {
-                if (result.every(res => JSON.stringify(res) !== JSON.stringify())) {
+                if (result.every(res => JSON.stringify(res) !== JSON.stringify(ptn))) {
                     patterns.push(result);
                 }
             }));
